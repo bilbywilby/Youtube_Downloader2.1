@@ -1,30 +1,28 @@
 import PySimpleGUI as sg
 import yt_dlp
 import os
+import re
+import sys
+import logging
+import logging.handlers
 import threading
 import json
 import time
 import hashlib
 import uuid
-from pathlib import Path
-from datetime import datetime, timezone
-from concurrent.futures import ThreadPoolExecutor, as_completed
 import webbrowser
-import logging
-import logging.handlers
-import platform
-import subprocess
-from queue import Queue, Empty
-import validators
-import re
-import urllib.parse
 import shutil
 import psutil
 import tempfile
+from pathlib import Path
+from datetime import datetime, timezone
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue, Empty
+import validators
 from dataclasses import dataclass, asdict
 from typing import Dict, List, Any, Optional, Union
 from urllib.parse import urlparse, parse_qs
-from functools import lru_cache
+from functools import lru_cache, partial
 
 # ----------- Version Info -----------
 VERSION = "2.0.0"
@@ -50,10 +48,6 @@ MIN_DISK_SPACE_MB = 1024  # 1GB minimum
 MAX_RETRIES = 3
 RETRY_DELAY = 5
 CHUNK_SIZE = 1024 * 1024  # 1MB chunks for downloads
-
-# Create necessary directories
-for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
-    d.mkdir(parents=True, exist_ok=True)
 
 # ----------- Logging Setup -----------
 def setup_logging():
@@ -84,10 +78,45 @@ def setup_logging():
 
 logger = setup_logging()
 
+# Create necessary directories
+for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
+    d.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Created directory: {d}")
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+    )
+    
+    # File handler with rotation
+    file_handler = logging.handlers.RotatingFileHandler(
+        LOG_FILE,
+        maxBytes=5*1024*1024,  # 5MB
+        backupCount=5,
+        encoding='utf-8'
+    )
+    file_handler.setFormatter(formatter)
+    
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+    
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+    
+    return logging.getLogger("YouTubeDownloader")
+
+logger = setup_logging()
+
 # ----------- Error Classes -----------
+
+
 class DownloaderError(Exception):
     """Base exception for downloader errors"""
-    pass
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
 
 class ValidationError(DownloaderError):
     """Validation related errors"""
@@ -142,16 +171,12 @@ class AppConfig:
             self.max_retries = max(1, min(int(self.max_retries), 10))
             self.retry_delay = max(1, min(int(self.retry_delay), 30))
             self.min_disk_space = max(100, int(self.min_disk_space))
-            
+
             # Validate download directory
             download_dir = Path(self.download_dir)
             if not download_dir.exists():
                 download_dir.mkdir(parents=True, exist_ok=True)
-            
-            # Validate theme
-            if self.theme not in sg.theme_list():
-                self.theme = 'Reddit'
-            
+
             return True
         except Exception as e:
             logger.error(f"Configuration validation failed: {e}")
@@ -172,10 +197,10 @@ class DownloadItem:
     video_id: Optional[str] = None
     filesize: Optional[int] = None
     download_time: Optional[str] = None
-    
+
     def to_dict(self) -> Dict[str, Any]:
         return asdict(self)
-    
+
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'DownloadItem':
         return cls(**data)
@@ -183,77 +208,58 @@ class DownloadItem:
 class URLValidator:
     """Enhanced URL validation and processing"""
     
+    YOUTUBE_PATTERNS = [
+        r'^https?:\/\/(?:www\.)?youtube\.com\/watch\?v=[\w-]+',
+        r'^https?:\/\/(?:www\.)?youtube\.com\/shorts\/[\w-]+',
+        r'^https?:\/\/youtu\.be\/[\w-]+',
+        r'^https?:\/\/(?:www\.)?youtube\.com\/playlist\?list=[\w-]+',
+    ]
+    
     @staticmethod
     def is_valid_youtube_url(url: str) -> bool:
-        """
-        Validate YouTube URLs with improved pattern matching
-        Supports: standard videos, shorts, playlists, channels, and live streams
-        """
         if not url or not isinstance(url, str):
             return False
             
         try:
-            result = urlparse(url)
-            if not all([result.scheme, result.netloc]):
-                return False
-                
-            # Extract video ID and validate format
-            video_id = URLValidator.extract_video_id(url)
-            if not video_id:
-                return False
-                
-            # Validate against patterns
-            youtube_patterns = [
-                r'^(https?://)?(www.)?(youtube.com|youtu.be)/.*$',
-                r'^(https?://)?(www.)?youtube.com/watch?v=[w-]+(&S*)?$',
-                r'^(https?://)?(www.)?youtu.be/[w-]+(?.*)?$',
-                r'^(https?://)?(www.)?youtube.com/shorts/[w-]+(?.*)?$',
-                r'^(https?://)?(www.)?youtube.com/playlist?list=[w-]+(&S*)?$',
-                r'^(https?://)?(www.)?youtube.com/channel/[w-]+(/S*)?$',
-                r'^(https?://)?(www.)?youtube.com/c/[w-]+(/S*)?$',
-                r'^(https?://)?(www.)?youtube.com/user/[w-]+(/S*)?$',
-                r'^(https?://)?(www.)?youtube.com/live/[w-]+(?.*)?$'
-            ]
-            
-            return any(re.match(pattern, url, re.IGNORECASE) for pattern in youtube_patterns)
+            return any(re.match(pattern, url, re.IGNORECASE) 
+                      for pattern in URLValidator.YOUTUBE_PATTERNS)
         except Exception as e:
             logger.error(f"URL validation error: {e}")
             return False
 
-    @staticmethod
-    @lru_cache(maxsize=128)    @staticmethod
-    @lru_cache(maxsize=128)
-    def extract_video_id(url: str) -> Optional[str]:
-        """Extract video ID from YouTube URL with caching"""
-        try:
-            if not url or not isinstance(url, str):
+@staticmethod
+@lru_cache(maxsize=128)
+def extract_video_id(url: str) -> Optional[str]:
+    """Extract video ID from YouTube URL with caching"""
+    try:
+        if not url or not isinstance(url, str):
+            return None
+            
+        # Handle youtu.be URLs
+        if 'youtu.be' in url:
+            video_id = url.split('/')[-1].split('?')[0]
+            return video_id if video_id else None
+        
+        # Handle youtube.com URLs
+        parsed_url = urlparse(url)
+        if 'youtube.com' in parsed_url.netloc:
+            if '/watch' in url:
+                video_id = parse_qs(parsed_url.query).get('v', [None])[0]
+            elif '/shorts/' in url:
+                video_id = url.split('/shorts/')[1].split('?')[0]
+            elif '/live/' in url:
+                video_id = url.split('/live/')[1].split('?')[0]
+            else:
                 return None
                 
-            # Handle youtu.be URLs
-            if 'youtu.be' in url:
-                video_id = url.split('/')[-1].split('?')[0]
-                return video_id if video_id else None
-            
-            # Handle youtube.com URLs
-            parsed_url = urlparse(url)
-            if 'youtube.com' in parsed_url.netloc:
-                if '/watch' in url:
-                    video_id = parse_qs(parsed_url.query).get('v', [None])[0]
-                elif '/shorts/' in url:
-                    video_id = url.split('/shorts/')[1].split('?')[0]
-                elif '/live/' in url:
-                    video_id = url.split('/live/')[1].split('?')[0]
-                else:
-                    return None
-                    
-                # Validate video ID format
-                if video_id and re.match(r'^[A-Za-z0-9_-]{11}$', video_id):
-                    return video_id
-                    
-            return None
-        except (ValueError, AttributeError, IndexError) as e:
-            logger.error(f"Error extracting video ID: {e}")
-            return None
+            # Validate video ID format
+            if video_id and re.match(r'^[A-Za-z0-9_-]{11}$', video_id):
+                return video_id
+                
+        return None
+    except (ValueError, AttributeError, IndexError) as e:
+        logger.error(f"Error extracting video ID: {e}")
+        return None
     
     @staticmethod
     def sanitize_url(url: str) -> str:
@@ -270,6 +276,7 @@ class URLValidator:
         except Exception as e:
             logger.error(f"Error sanitizing URL: {e}")
             return ''
+
 class FileManager:
     """Handle file operations with safety checks"""
     
@@ -690,17 +697,25 @@ class DownloadManager:
         self._update_queue_display()
 
 # ----------- GUI Implementation -----------
+
 class YoutubeDownloaderGUI:
     """Main GUI implementation with enhanced features"""
-    
+
     def __init__(self):
+        from config_manager import ConfigManager
+        from history_manager import HistoryManager
+        try:
+            from queue_manager import QueueManager
+        except ImportError:
+            raise ImportError("The 'queue_manager' module is missing. Ensure 'queue_manager.py' exists in the same directory or is in the Python path.")
+
         self.config_manager = ConfigManager()
         self.history_manager = HistoryManager()
         self.queue_manager = QueueManager()
-        
+
         # Set theme
         sg.theme(self.config_manager.config.theme)
-        
+
         # Create window
         self.window = self._create_window()
         self.download_manager = DownloadManager(
