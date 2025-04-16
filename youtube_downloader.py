@@ -2,11 +2,9 @@ import PySimpleGUI as sg
 import yt_dlp
 import os
 import re
-import sys
 import logging
 import logging.handlers
 import threading
-import json
 import time
 import hashlib
 import uuid
@@ -54,7 +52,7 @@ def setup_logging():
     formatter = logging.Formatter(
         '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
     )
-    
+
     # File handler with rotation
     file_handler = logging.handlers.RotatingFileHandler(
         LOG_FILE,
@@ -63,17 +61,17 @@ def setup_logging():
         encoding='utf-8'
     )
     file_handler.setFormatter(formatter)
-    
+
     # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
-    
+
     # Configure root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
-    
+
     return logging.getLogger("YouTubeDownloader")
 
 logger = setup_logging()
@@ -85,7 +83,7 @@ for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
     formatter = logging.Formatter(
         '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
     )
-    
+
     # File handler with rotation
     file_handler = logging.handlers.RotatingFileHandler(
         LOG_FILE,
@@ -94,17 +92,17 @@ for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
         encoding='utf-8'
     )
     file_handler.setFormatter(formatter)
-    
+
     # Console handler
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
-    
+
     # Configure root logger
     root_logger = logging.getLogger()
     root_logger.setLevel(logging.INFO)
     root_logger.addHandler(file_handler)
     root_logger.addHandler(console_handler)
-    
+
     return logging.getLogger("YouTubeDownloader")
 
 logger = setup_logging()
@@ -161,7 +159,7 @@ class AppConfig:
     download_archive: bool = True
     archive_path: str = str(APP_ROOT / 'downloaded.txt')
     notify_on_complete: bool = True
-    
+
     def validate(self) -> bool:
         """Validate configuration values"""
         try:
@@ -207,21 +205,21 @@ class DownloadItem:
 # ----------- Utility Classes -----------
 class URLValidator:
     """Enhanced URL validation and processing"""
-    
+
     YOUTUBE_PATTERNS = [
         r'^https?:\/\/(?:www\.)?youtube\.com\/watch\?v=[\w-]+',
         r'^https?:\/\/(?:www\.)?youtube\.com\/shorts\/[\w-]+',
         r'^https?:\/\/youtu\.be\/[\w-]+',
         r'^https?:\/\/(?:www\.)?youtube\.com\/playlist\?list=[\w-]+',
     ]
-    
+
     @staticmethod
     def is_valid_youtube_url(url: str) -> bool:
         if not url or not isinstance(url, str):
             return False
-            
+
         try:
-            return any(re.match(pattern, url, re.IGNORECASE) 
+            return any(re.match(pattern, url, re.IGNORECASE)
                       for pattern in URLValidator.YOUTUBE_PATTERNS)
         except Exception as e:
             logger.error(f"URL validation error: {e}")
@@ -234,12 +232,12 @@ def extract_video_id(url: str) -> Optional[str]:
     try:
         if not url or not isinstance(url, str):
             return None
-            
+
         # Handle youtu.be URLs
         if 'youtu.be' in url:
             video_id = url.split('/')[-1].split('?')[0]
             return video_id if video_id else None
-        
+
         # Handle youtube.com URLs
         parsed_url = urlparse(url)
         if 'youtube.com' in parsed_url.netloc:
@@ -251,26 +249,26 @@ def extract_video_id(url: str) -> Optional[str]:
                 video_id = url.split('/live/')[1].split('?')[0]
             else:
                 return None
-                
+
             # Validate video ID format
             if video_id and re.match(r'^[A-Za-z0-9_-]{11}$', video_id):
                 return video_id
-                
+
         return None
     except (ValueError, AttributeError, IndexError) as e:
         logger.error(f"Error extracting video ID: {e}")
         return None
-    
+
     @staticmethod
     def sanitize_url(url: str) -> str:
         """Sanitize URL by removing potentially harmful characters"""
         try:
             if not url or not isinstance(url, str):
                 return ''
-                
+
             # Remove whitespace and common unsafe characters
             sanitized = re.sub(r'[<>"\'`;)(]', '', url.strip())
-            
+
             # Ensure proper URL encoding
             return urllib.parse.quote(sanitized, safe=':/?=&')
         except Exception as e:
@@ -279,7 +277,7 @@ def extract_video_id(url: str) -> Optional[str]:
 
 class FileManager:
     """Handle file operations with safety checks"""
-    
+
     @staticmethod
     def sanitize_filename(filename: str) -> str:
         """Create safe filename"""
@@ -297,10 +295,10 @@ class FileManager:
         base_path = Path(base_dir)
         date_dir = base_path / datetime.now().strftime('%Y-%m')
         date_dir.mkdir(parents=True, exist_ok=True)
-        
+
         safe_name = FileManager.sanitize_filename(filename)
         path = date_dir / safe_name
-        
+
         # Handle duplicates
         counter = 1
         stem = path.stem
@@ -308,7 +306,7 @@ class FileManager:
         while path.exists():
             path = date_dir / f"{stem}_{counter}{suffix}"
             counter += 1
-            
+
         return path
 
     @staticmethod
@@ -340,7 +338,7 @@ class FileManager:
 
 class SystemManager:
     """System-related operations"""
-    
+
     @staticmethod
     def check_ffmpeg() -> bool:
         """Check if FFmpeg is available"""
@@ -375,7 +373,7 @@ class SystemManager:
 
 class FormatDetector:
     """Enhanced format detection with caching"""
-    
+
     def __init__(self):
         self.ydl_opts = {
             'quiet': True,
@@ -383,7 +381,7 @@ class FormatDetector:
             'extract_flat': 'in_playlist'
         }
         self._format_cache: Dict[str, Dict[str, List[Dict[str, Any]]]] = {}
-        
+
     @lru_cache(maxsize=100)
     def detect_formats(self, url: str) -> Dict[str, List[Dict[str, Any]]]:
         """Detect available formats with caching"""
@@ -391,10 +389,10 @@ class FormatDetector:
             with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
                 info = ydl.extract_info(url, download=False)
                 formats = {'video': [], 'audio': []}
-                
+
                 if not info:
                     raise ValueError("No format information found")
-                
+
                 for fmt in info.get('formats', []):
                     format_info = {
                         'format_id': fmt.get('format_id', ''),
@@ -404,7 +402,7 @@ class FormatDetector:
                         'vcodec': fmt.get('vcodec', 'none'),
                         'acodec': fmt.get('acodec', 'none'),
                     }
-                    
+
                     if fmt.get('vcodec', 'none') != 'none':
                         format_info.update({
                             'height': fmt.get('height', 0),
@@ -419,17 +417,17 @@ class FormatDetector:
                             'asr': fmt.get('asr', 0),
                         })
                         formats['audio'].append(format_info)
-                
+
                 # Sort formats by quality
                 formats['video'].sort(key=lambda x: (x.get('height', 0), x.get('tbr', 0)), reverse=True)
                 formats['audio'].sort(key=lambda x: x.get('abr', 0), reverse=True)
-                
+
                 return formats
-                
+
         except Exception as e:
             logger.error(f"Format detection error for {url}: {e}")
             return {'video': [], 'audio': []}
-    
+
     def clear_cache(self):
         """Clear format detection cache"""
         self.detect_formats.cache_clear()
@@ -437,7 +435,7 @@ class FormatDetector:
 # ----------- Download Management -----------
 class DownloadManager:
     """Enhanced download manager with retry and resume capabilities"""
-    
+
     def __init__(self, config_manager, window: sg.Window, history_manager, queue_manager):
         self.config = config_manager
         self.window = window
@@ -520,7 +518,7 @@ class DownloadManager:
         try:
             # Prepare download options
             ydl_opts = self._prepare_download_options(download_item)
-            
+
             for attempt in range(self.config.config.max_retries):
                 try:
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -560,7 +558,7 @@ class DownloadManager:
     def _prepare_download_options(self, download_item: DownloadItem) -> Dict[str, Any]:
         """Prepare yt-dlp options for download"""
         output_template = self._get_output_template(download_item)
-        
+
         opts = {
             'format': self._get_format_string(download_item.quality, download_item.format),
             'outtmpl': output_template,
@@ -599,7 +597,7 @@ class DownloadManager:
         """Generate format string based on quality and format"""
         if quality == 'best':
             return f'bestvideo[ext={format}]+bestaudio[ext=m4a]/best[ext={format}]/best'
-        
+
         height = quality.replace('p', '')
         return f'bestvideo[height<={height}][ext={format}]+bestaudio[ext=m4a]/best[height<={height}][ext={format}]/best'
 
@@ -612,7 +610,7 @@ class DownloadManager:
     def _get_postprocessors(self, download_item: DownloadItem) -> List[Dict[str, Any]]:
         """Configure post-processors for the download"""
         postprocessors = []
-        
+
         # Embed metadata
         postprocessors.append({
             'key': 'FFmpegMetadata',
@@ -724,7 +722,7 @@ class YoutubeDownloaderGUI:
             self.history_manager,
             self.queue_manager
         )
-        
+
         # Set up keyboard shortcuts
         self.shortcuts = {
             'ctrl+q': '-EXIT-',
@@ -735,14 +733,14 @@ class YoutubeDownloaderGUI:
             'ctrl+c': '-CANCEL-',
             'ctrl+o': '-OPEN_FOLDER-'
         }
-        
+
         # Create system tray
         self.tray = self._create_tray()
-        
+
         # Initialize
         self._load_initial_queue()
         self._update_history_display()
-        
+
         logger.info("Application initialized successfully")
 
     def _create_window(self) -> sg.Window:
@@ -758,17 +756,17 @@ class YoutubeDownloaderGUI:
             '-AUDIO_FORMAT-': 'Choose the audio format for extraction',
             '-PLAYLIST-': 'Download entire playlist'
         }
-        
+
         # URL Section
         url_section = [
             [sg.Text("YouTube URL:", font=('Helvetica', 11), pad=((5,5),(10,5)))],
-            [sg.Input(key='-URL-', size=(60, 1), font=('Helvetica', 10), 
+            [sg.Input(key='-URL-', size=(60, 1), font=('Helvetica', 10),
                      tooltip=tooltips['-URL-'], pad=((5,5),(0,5)))],
             [sg.Button('🔍 Detect Format', key='-DETECT-', size=(15, 1)),
              sg.Button('👁 Preview', key='-PREVIEW-', size=(15, 1)),
              sg.Button('📋 Paste', key='-PASTE-', size=(15, 1))]
         ]
-        
+
         # Options Section
         options_section = [
             [sg.Frame('Download Options', [
@@ -800,7 +798,7 @@ class YoutubeDownloaderGUI:
                 ])]
             ])]
         ]
-        
+
         # Queue Section
         queue_section = [
             [sg.Frame('Download Queue', [
@@ -814,7 +812,7 @@ class YoutubeDownloaderGUI:
                  sg.Button('⚙️ Settings', key='-SETTINGS-', size=(15, 1))]
             ])]
         ]
-        
+
         # Progress Section
         progress_section = [
             [sg.Frame('Progress', [
@@ -831,7 +829,7 @@ class YoutubeDownloaderGUI:
                         font=('Helvetica', 10))]
             ])]
         ]
-        
+
         # History Section
         history_section = [
             [sg.Frame('Download History', [
@@ -843,7 +841,7 @@ class YoutubeDownloaderGUI:
                           size=(15, 1))]
             ])]
         ]
-        
+
         # Footer Section
         footer_section = [
             [sg.Button('📂 Open Downloads', key='-OPEN_FOLDER-'),
@@ -851,7 +849,7 @@ class YoutubeDownloaderGUI:
              sg.Button('❌ Exit', key='-EXIT-')],
             [sg.Text(f'v{VERSION}', font=('Helvetica', 8), pad=((5,5),(5,5)))]
         ]
-        
+
         # Combine all sections
         layout = [
             url_section,
@@ -861,7 +859,7 @@ class YoutubeDownloaderGUI:
             history_section,
             footer_section
         ]
-        
+
         return sg.Window(
             'YouTube Downloader',
             layout,
@@ -902,7 +900,7 @@ class YoutubeDownloaderGUI:
 
                 # Handle window events
                 event, values = self.window.read(timeout=100)
-                
+
                 # Handle window close
                 if event in (None, '-EXIT-'):
                     if self._confirm_exit():
@@ -964,21 +962,21 @@ class YoutubeDownloaderGUI:
                 self.queue_manager.save_queue(
                     list(self.download_manager.download_queue.queue)
                 )
-            
+
             # Save configuration
             self.config_manager.save_config()
-            
+
             # Cancel downloads
             self.download_manager.cancel_all_downloads()
-            
+
             # Clean temporary files
             FileManager.cleanup_temp_files()
-            
+
             # Close window and tray
             self.window.close()
             if self.tray:
                 self.tray.close()
-                
+
         except Exception as e:
             logger.error(f"Cleanup error: {e}")
 
@@ -1005,4 +1003,16 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+# This script is a YouTube downloader application with enhanced error handling, logging, and GUI features.
+# It uses yt-dlp for downloading videos and supports various formats and options.
+# The application is designed to be user-friendly and includes a system tray icon for easy access.
+# The script is structured to allow for easy maintenance and future enhancements.
+
+# It includes classes for managing downloads, file operations, and system interactions.
+# The application also includes a configuration manager for storing and loading settings.
+# The script uses a logging system to track events and errors, and it includes a GUI with buttons and input fields for user interaction.
+# The script is designed to be modular, with separate classes for different functionalities.
+# It includes a main function for running the application and error handling for unexpected events.
 
