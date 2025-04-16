@@ -16,7 +16,6 @@ import string
 import base64
 import sqlite3
 import datetime
-import shutil
 import uuid
 import webbrowser
 import shutil
