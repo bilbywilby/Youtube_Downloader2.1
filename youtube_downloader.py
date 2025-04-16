@@ -6,7 +6,6 @@ import logging
 import logging.handlers
 import threading
 import time
-import hashlib
 import uuid
 import webbrowser
 import shutil
