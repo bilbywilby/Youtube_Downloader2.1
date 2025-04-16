@@ -22,7 +22,6 @@ import shutil
 import psutil
 import tempfile
 from pathlib import Path
-from datetime import datetime, timezone
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from queue import Queue, Empty
 import validators
@@ -57,6 +56,8 @@ RETRY_DELAY = 5
 CHUNK_SIZE = 1024 * 1024  # 1MB chunks for downloads
 
 # ----------- Logging Setup -----------
+
+
 def setup_logging():
     formatter = logging.Formatter(
         '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
@@ -98,7 +99,8 @@ logger = setup_logging()
 
 class DownloaderError(Exception):
     """
-    DownloaderError is a custom exception class used as the base for all downloader-related errors.
+    DownloaderError is a custom exception class used as the base for all
+    downloader-related errors.
 
     Attributes:
         message (str): A descriptive error message explaining the cause of the exception.
@@ -127,7 +129,9 @@ class ConfigError(DownloaderError):
     """Configuration related errors"""
     pass
 
+
 # ----------- Data Classes -----------
+
 @dataclass
 class AppConfig:
     download_dir: str = str(DOWNLOADS_ROOT)
@@ -208,17 +212,17 @@ class URLValidator:
         r'^https?:\/\/(?:www\.)?youtube\.com\/playlist\?list=[\w-]+',
     ]
 
-    @staticmethod
-    def is_valid_youtube_url(url: str) -> bool:
-        if not url or not isinstance(url, str):
-            return False
+@staticmethod
+def is_valid_youtube_url(url: str) -> bool:
+    if not url or not isinstance(url, str):
+        return False
 
-        try:
-            return any(re.match(pattern, url, re.IGNORECASE)
-                      for pattern in URLValidator.YOUTUBE_PATTERNS)
-        except Exception as e:
-            logger.error(f"URL validation error: {e}")
-            return False
+    try:
+        return any(re.match(pattern, url, re.IGNORECASE)
+                  for pattern in URLValidator.YOUTUBE_PATTERNS)
+    except Exception as e:
+        logger.error(f"URL validation error: {e}")
+        return False
 
 @staticmethod
 @lru_cache(maxsize=128)
