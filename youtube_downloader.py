@@ -6,6 +6,17 @@ import logging
 import logging.handlers
 import threading
 import time
+import urllib
+import requests
+import subprocess
+import platform
+import json
+import random
+import string
+import base64
+import sqlite3
+import datetime
+import shutil
 import uuid
 import webbrowser
 import shutil
@@ -22,7 +33,7 @@ from urllib.parse import urlparse, parse_qs
 from functools import lru_cache, partial
 
 # ----------- Version Info -----------
-VERSION = "2.0.0"
+VERSION = "2.0.1"
 AUTHOR = "bilbywilby"
 UPDATED = "2025-04-16"
 
@@ -73,36 +84,13 @@ def setup_logging():
 
     return logging.getLogger("YouTubeDownloader")
 
+
 logger = setup_logging()
 
 # Create necessary directories
 for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
     d.mkdir(parents=True, exist_ok=True)
     logger.info(f"Created directory: {d}")
-    formatter = logging.Formatter(
-        '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
-    )
-
-    # File handler with rotation
-    file_handler = logging.handlers.RotatingFileHandler(
-        LOG_FILE,
-        maxBytes=5*1024*1024,  # 5MB
-        backupCount=5,
-        encoding='utf-8'
-    )
-    file_handler.setFormatter(formatter)
-
-    # Console handler
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(formatter)
-
-    # Configure root logger
-    root_logger = logging.getLogger()
-    root_logger.setLevel(logging.INFO)
-    root_logger.addHandler(file_handler)
-    root_logger.addHandler(console_handler)
-
-    return logging.getLogger("YouTubeDownloader")
 
 logger = setup_logging()
 
@@ -110,6 +98,15 @@ logger = setup_logging()
 
 
 class DownloaderError(Exception):
+    """
+    DownloaderError is a custom exception class used as the base for all downloader-related errors.
+
+    Attributes:
+        message (str): A descriptive error message explaining the cause of the exception.
+
+    Methods:
+        __init__(message: str): Initializes the DownloaderError with a specific error message.
+    """
     """Base exception for downloader errors"""
     def __init__(self, message: str):
         self.message = message
