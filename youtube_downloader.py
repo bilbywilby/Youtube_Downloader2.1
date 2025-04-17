@@ -1,35 +1,35 @@
-import PySimpleGUI as sg
-import yt_dlp
-import os
-import re
+import base64
+import datetime
+import json
 import logging
 import logging.handlers
+import os
+import platform
+import random
+import re
+import shutil
+import sqlite3
+import string
+import subprocess
+import tempfile
 import threading
 import time
 import urllib
-import requests
-import subprocess
-import platform
-import json
-import random
-import string
-import base64
-import sqlite3
-import datetime
 import uuid
 import webbrowser
-import shutil
-import psutil
-import tempfile
-from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from queue import Queue, Empty
-import validators
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Any, Optional, Union
-from urllib.parse import urlparse, parse_qs
+from dataclasses import asdict, dataclass
+from datetime import datetime  # Update the import
 from functools import lru_cache, partial
-from datetime import datetime # Update the import
+from pathlib import Path
+from queue import Empty, Queue
+from typing import Any, Dict, List, Optional, Union
+from urllib.parse import parse_qs, urlparse
+
+import psutil
+import PySimpleGUI as sg
+import validators
+import yt_dlp
 
 # ----------- Version Info -----------
 VERSION = "2.0.2"
@@ -434,7 +434,317 @@ class FormatDetector:
 class DownloadManager:
     """Enhanced download manager with retry and resume capabilities"""
 
-    def __init__(self, config_manager, window: sg.Window, history_manager, queue_manager):
+    def __init__(self, config_manager, window: sg.Window, queue_manager):
+        import PySimpleGUI as sg
+
+
+import base64
+import datetime
+import json
+import logging
+import logging.handlers
+import os
+import platform
+import random
+import re
+import shutil
+import sqlite3
+import string
+import subprocess
+import tempfile
+import threading
+import time
+import urllib
+import uuid
+import webbrowser
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dataclasses import asdict, dataclass
+from datetime import datetime
+from functools import lru_cache, partial
+from pathlib import Path
+from queue import Empty, Queue
+from typing import Any, Dict, List, Optional, Union
+from urllib.parse import parse_qs, urlparse
+
+import psutil
+import requests
+import validators
+import yt_dlp
+
+# ----------- Version Info -----------
+VERSION = "2.0.2"
+AUTHOR = "bilbywilby"
+UPDATED = "2025-04-16"
+
+# ----------- App Directories & Constants -----------
+APP_ROOT = Path.home() / ".youtube_downloader"
+CONFIG_PATH = APP_ROOT / "config.json"
+HISTORY_PATH = APP_ROOT / "history.json"
+QUEUE_PATH = APP_ROOT / "queue.json"
+LOG_DIR = APP_ROOT / "logs"
+DOWNLOADS_ROOT = APP_ROOT / "downloads"
+TEMP_DIR = APP_ROOT / "temp"
+CACHE_DIR = APP_ROOT / "cache"
+LOG_FILE = LOG_DIR / "downloader.log"
+
+# File formats and limits
+ALLOWED_VIDEO_FORMATS = {"mp4", "mkv", "webm"}
+ALLOWED_AUDIO_FORMATS = {"mp3", "wav", "m4a", "aac", "flac"}
+MAX_FILENAME_LENGTH = 128
+MIN_DISK_SPACE_MB = 1024  # 1GB minimum
+MAX_RETRIES = 3
+RETRY_DELAY = 5
+CHUNK_SIZE = 1024 * 1024  # 1MB chunks for downloads
+
+# ----------- Logging Setup -----------
+
+
+def setup_logging():
+    formatter = logging.Formatter(
+        "%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s"
+    )
+
+    # File handler with rotation
+    file_handler = logging.handlers.RotatingFileHandler(
+        LOG_FILE,
+        maxBytes=5 * 1024 * 1024,  # 5MB
+        backupCount=5,
+        encoding="utf-8",
+    )
+    file_handler.setFormatter(formatter)
+
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+
+    return logging.getLogger("YouTubeDownloader")
+
+
+logger = setup_logging()
+
+# Create necessary directories
+for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
+    d.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Created directory: {d}")
+
+# ----------- Error Classes -----------
+
+
+class DownloaderError(Exception):
+    """
+    DownloaderError is a custom exception class used as the base for all
+    downloader-related errors.
+
+    Attributes:
+        message (str): A descriptive error message explaining the cause of the exception.
+
+    Methods:
+        __init__(message: str): Initializes the DownloaderError with a specific error message.
+    """
+
+    """Base exception for downloader errors"""
+
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+
+class ValidationError(DownloaderError):
+    """Validation related errors"""
+
+    pass
+
+
+class DiskSpaceError(DownloaderError):
+    """Disk space related errors"""
+
+    pass
+
+
+class NetworkError(DownloaderError):
+    """Network related errors"""
+
+    pass
+
+
+class ConfigError(DownloaderError):
+    """Configuration related errors"""
+
+    pass
+
+
+# ----------- Data Classes -----------
+
+
+@dataclass
+class AppConfig:
+    download_dir: str = str(DOWNLOADS_ROOT)
+    max_workers: int = 4
+    default_format: str = "bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4"
+    default_resolution: str = "best"
+    default_audio_format: str = "mp3"
+    include_metadata: bool = True
+    extract_thumbnail: bool = True
+    theme: str = "Reddit"
+    use_ffmpeg: bool = False
+    auto_queue: bool = False
+    show_advanced: bool = False
+    max_download_size: int = 2048
+    rate_limit: int = 0
+    history_enabled: bool = True
+    max_retries: int = 3
+    retry_delay: int = 5
+    min_disk_space: int = 1024
+    preferred_protocol: str = "https"
+    resume_downloads: bool = True
+    verify_ssl: bool = True
+    proxy: str = ""
+    download_archive: bool = True
+    archive_path: str = str(APP_ROOT / "downloaded.txt")
+    notify_on_complete: bool = True
+
+    def validate(self) -> bool:
+        """Validate configuration values"""
+        try:
+            self.max_workers = max(1, min(int(self.max_workers), 10))
+            self.rate_limit = max(0, int(self.rate_limit))
+            self.max_download_size = max(0, int(self.max_download_size))
+            self.max_retries = max(1, min(int(self.max_retries), 10))
+            self.retry_delay = max(1, min(int(self.retry_delay), 30))
+            self.min_disk_space = max(100, int(self.min_disk_space))
+
+            # Validate download directory
+            download_dir = Path(self.download_dir)
+            if not download_dir.exists():
+                download_dir.mkdir(parents=True, exist_ok=True)
+
+            return True
+        except Exception as e:
+            logger.error(f"Configuration validation failed: {e}")
+            return False
+
+
+@dataclass
+class DownloadItem:
+    url: str
+    title: Optional[str] = None
+    format: str = "mp4"
+    quality: str = "best"
+    download_path: Optional[str] = None
+    status: str = "pending"
+    progress: int = 0
+    speed: float = 0
+    eta: int = 0
+    error: Optional[str] = None
+    video_id: Optional[str] = None
+    filesize: Optional[int] = None
+    download_time: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> "DownloadItem":
+        return cls(**data)
+
+
+# ----------- Utility Classes -----------
+
+
+class URLValidator:
+    """Enhanced URL validation and processing"""
+
+    YOUTUBE_PATTERNS = [
+        r"^https?:\/\/(?:www\.)?youtube\.com\/watch\?v=[\w-]+",
+        r"^https?:\/\/(?:www\.)?youtube\.com\/shorts\/[\w-]+",
+        r"^https?:\/\/youtu\.be\/[\w-]+",
+        r"^https?:\/\/(?:www\.)?youtube\.com\/playlist\?list=[\w-]+",
+    ]
+
+
+@staticmethod
+def is_valid_youtube_url(url: str) -> bool:
+    if not url or not isinstance(url, str):
+        return False
+
+    try:
+        return any(
+            re.match(pattern, url, re.IGNORECASE)
+            for pattern in URLValidator.YOUTUBE_PATTERNS
+        )
+    except Exception as e:
+        logger.error(f"URL validation error: {e}")
+        return False
+
+
+@staticmethod
+@lru_cache(maxsize=128)
+def extract_video_id(url: str) -> Optional[str]:
+    """Extract video ID from YouTube URL with caching"""
+    try:
+        if not url or not isinstance(url, str):
+            return None
+
+        # Handle youtu.be URLs
+        if "youtu.be" in url:
+            video_id = url.split("/")[-1].split("?")[0]
+            return video_id if video_id else None
+
+        # Handle youtube.com URLs
+        parsed_url = urlparse(url)
+        if "youtube.com" in parsed_url.netloc:
+            if "/watch" in url:
+                video_id = parse_qs(parsed_url.query).get("v", [None])[0]
+            elif "/shorts/" in url:
+                video_id = url.split("/shorts/")[1].split("?")[0]
+            elif "/live/" in url:
+                video_id = url.split("/live/")[1].split("?")[0]
+            else:
+                return None
+
+            # Validate video ID format
+            if video_id and re.match(r"^[A-Za-z0-9_-]{11}$", video_id):
+                return video_id
+
+        return None
+    except (ValueError, AttributeError, IndexError) as e:
+        logger.error(f"Error extracting video ID: {e}")
+        return None
+
+    @staticmethod
+    def sanitize_url(url: str) -> str:
+        """Sanitize URL by removing potentially harmful characters"""
+        try:
+            if not url or not isinstance(url, str):
+                return ""
+
+            # Remove whitespace and common unsafe characters
+            sanitized = re.sub(r'[<>"\'`;)(]', "", url.strip())
+
+            # Ensure proper URL encoding
+            return urllib.parse.quote(sanitized, safe=":/?=&")
+        except Exception as e:
+            logger.error(f"Error sanitizing URL: {e}")
+            return ""
+
+
+class FileManager:
+    """Handle file operations with safety checks"""
+
+    @staticmethod
+    def sanitize_filename(filename: str) -> str:
+        """Create safe filename"""
+        # Remove invalid characters
+        safe_name = re.sub(r'[<>:"/|?*]', "", filename)
+        # Replace spaces and multiple dots
+        safe_name = re.sub(r"s+", "_", safe_name)
+
         self.config = config_manager
         self.window = window
         self.download_queue: Queue[DownloadItem] = Queue()
@@ -715,10 +1025,7 @@ class YoutubeDownloaderGUI:
         # Create window
         self.window = self._create_window()
         self.download_manager = DownloadManager(
-            self.config_manager,
-            self.window,
-            self.history_manager,
-            self.queue_manager
+            self.config_manager, self.window, self.queue_manager
         )
 
         # Set up keyboard shortcuts
@@ -1014,3 +1321,4 @@ if __name__ == '__main__':
 # The script is designed to be modular, with separate classes for different functionalities.
 # It includes a main function for running the application and error handling for unexpected events.
 
+from datetime import datetime
