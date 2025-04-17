@@ -152,3 +152,19 @@ if __name__ == "__main__":
         temp_config_path.parent.rmdir()
     except Exception:
         pass
+    # Clean up the original config file if empty
+    try:
+        CONFIG_FILE.unlink()
+        CONFIG_FILE.parent.rmdir()
+    except Exception:
+        pass
+    # Clean up the original config directory if empty
+    try:
+        CONFIG_FILE.parent.rmdir()
+    except Exception:
+        pass
+    # Clean up the original config file if empty
+    try:
+        CONFIG_FILE.unlink()
+    except Exception:
+        pass
