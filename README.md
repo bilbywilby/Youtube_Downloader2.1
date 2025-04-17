@@ -5,6 +5,8 @@ Here's a draft for a `README.md` file for your repository:
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Version](https://img.shields.io/badge/Version-2.0.3-green)
+![Updated](https://img.shields.io/badge/Updated-2025--04--16-brightgreen)
 
 ## Overview
 
