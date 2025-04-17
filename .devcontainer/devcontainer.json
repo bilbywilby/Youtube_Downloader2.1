@@ -8,7 +8,8 @@
 		"vscode": {
 			"extensions": [
 				"evolution-gaming.evolution-gaming--vscode-eslint",
-				"JakeBecker.elixir-ls"
+				"JakeBecker.elixir-ls",
+				"formulahendry.code-runner"
 			]
 		}
 	}

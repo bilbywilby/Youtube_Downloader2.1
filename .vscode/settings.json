@@ -38,10 +38,7 @@
   "C_Cpp_Runner.compilerArgs": [],
   "C_Cpp_Runner.linkerArgs": [],
   "C_Cpp_Runner.includePaths": [],
-  "C_Cpp_Runner.includeSearch": [
-    "*",
-    "**/*"
-  ],
+  "C_Cpp_Runner.includeSearch": ["*", "**/*"],
   "C_Cpp_Runner.excludeSearch": [
     "**/build",
     "**/build/**",
@@ -56,6 +53,7 @@
   "C_Cpp_Runner.showCompilationTime": false,
   "C_Cpp_Runner.useLinkTimeOptimization": false,
   "C_Cpp_Runner.msvcSecureNoWarnings": false,
+<<<<<<< HEAD
   "python.testing.pytestArgs": [
     "."
   ],
@@ -63,3 +61,7 @@
   "python.testing.pytestEnabled": true,
   "cmake.ignoreCMakeListsMissing": true
 }
+=======
+  "cSpell.words": ["preferredcodec", "preferredquality"]
+}
+>>>>>>> 4d28d24 (`Refactor launch.json, settings.json, config_manager.py, and youtube_downloader.py`)

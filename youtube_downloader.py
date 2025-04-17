@@ -830,12 +830,19 @@ class FileManager:
 
         # Embed thumbnail if possible
         if self.config.config.extract_thumbnail:
+<<<<<<< HEAD
             postprocessors.append(
                 {
                     "key": "EmbedThumbnail",
                     "already_have_thumbnail": False,
                 }
             )
+=======
+            postprocessor.append({
+                'key': 'EmbedThumbnail',
+                'already_have_thumbnail': False,
+            })
+>>>>>>> 4d28d24 (`Refactor launch.json, settings.json, config_manager.py, and youtube_downloader.py`)
 
         # Extract audio if requested
         if download_item.format in ALLOWED_AUDIO_FORMATS:
