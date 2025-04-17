@@ -1,128 +1,123 @@
-Here's a draft for a `README.md` file for your repository:
-
-```markdown
-# YouTube Downloader 2.1
+# YouTube Downloader Pro
 
 ![License](https://img.shields.io/badge/License-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/Python-3.8%2B-blue)
+![Version](https://img.shields.io/badge/Version-2.0.3-green)
+![Updated](https://img.shields.io/badge/Updated-2025--04--16-brightgreen)
 
-## Overview
-
-YouTube Downloader 2.1 is a powerful and user-friendly desktop application that allows you to download videos and audio from YouTube and other supported platforms. Built with `yt-dlp`, the application comes with an intuitive GUI implemented using `PySimpleGUI`, making it accessible for users of all technical levels. 
-
-This downloader supports multiple formats, resolutions, and advanced features like metadata embedding, thumbnail extraction, and more.
-
----
+A powerful desktop application for downloading videos and audio from YouTube with advanced features and an intuitive GUI.
 
 ## Features
 
-- **Video and Audio Downloading**: Supports MP4, MKV, MP3, FLAC, and more.
-- **Quality Selection**: Download videos in resolutions up to 4K.
-- **Playlist Support**: Download entire playlists effortlessly.
-- **GUI**: Intuitive and easy-to-use interface with progress tracking.
-- **Error Handling**: Detailed logging and retry mechanisms ensure downloads are reliable.
-- **Resume Capability**: Automatically resumes interrupted downloads.
-- **Metadata and Thumbnail Extraction**: Save additional information for downloaded files.
-- **Configurable Options**: Fully customizable settings for download preferences.
+- **High-Quality Downloads**
+  - Support for resolutions up to 4K
+  - Multiple video formats (MP4, MKV, WEBM)
+  - Various audio formats (MP3, WAV, M4A, AAC, FLAC)
 
----
+- **Advanced Options**
+  - Playlist support
+  - Subtitle downloads
+  - Thumbnail extraction
+  - Metadata embedding
+  - Download queue management
+
+- **User Experience**
+  - Modern graphical interface
+  - Progress tracking
+  - Download history
+  - System tray integration
+  - Keyboard shortcuts
 
 ## Installation
 
 ### Prerequisites
+- Python 3.8 or higher
+- FFmpeg (optional, for enhanced media processing)
 
-Make sure you have the following installed:
+### Setup
+1. Clone the repository:
+```bash
+git clone https://github.com/your-username/youtube-downloader-pro.git
+cd youtube-downloader-pro
+```
 
-- **Python 3.8 or higher**
-- **FFmpeg** (Optional, for enhanced audio/video processing)
-
-### Steps
-
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/bilbywilby/Youtube_Downloader2.1.git
-   cd Youtube_Downloader2.1
-   ```
-
-2. Install the required dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
+2. Install dependencies:
+```bash
+pip install -r requirements.txt
+```
 
 3. Run the application:
-   ```bash
-   python youtube_downloader.py
-   ```
-
----
+```bash
+python youtube_downloader.py
+```
 
 ## Usage
 
-### Steps to Download a Video or Audio:
+1. **Basic Download**
+   - Launch the application
+   - Paste a YouTube URL
+   - Select format and quality
+   - Click "Start Download"
 
-1. Launch the application by running `youtube_downloader.py`.
-2. Paste the YouTube URL into the input field.
-3. Select your desired format and quality.
-4. Choose whether you want to download only the audio or the entire video.
-5. Click **Start Download** to begin.
-
-### Advanced Features:
-
-- Use the **Settings** menu to configure default download paths, themes, and more.
-- Enable subtitles, playlists, and metadata extraction as needed.
-
----
+2. **Advanced Features**
+   - Queue multiple downloads
+   - Extract audio only
+   - Download entire playlists
+   - Configure custom save locations
+   - Enable subtitle downloads
 
 ## Configuration
 
-The application automatically creates a configuration file (`config.json`) in the `.youtube_downloader` directory. You can update the configuration directly in the app or by editing the file.
+The application creates a `.youtube_downloader` directory in your home folder with:
+- `config.json` - Application settings
+- `history.json` - Download history
+- `queue.json` - Active download queue
+- `logs/` - Application logs
 
----
+## Keyboard Shortcuts
+
+- `Ctrl+Q` - Exit application
+- `Ctrl+A` - Add to queue
+- `Ctrl+S` - Start download
+- `Ctrl+D` - Detect format
+- `Ctrl+P` - Preview
+- `Ctrl+C` - Cancel download
+- `Ctrl+O` - Open downloads folder
 
 ## Troubleshooting
 
-- **Insufficient Disk Space**: Ensure at least 1GB of free space is available.
-- **FFmpeg Not Found**: Install FFmpeg to enable advanced features like audio extraction.
-- **Invalid URL**: Confirm the URL is a valid YouTube link.
+Common issues and solutions:
 
-Check the log file (`~/.youtube_downloader/logs/downloader.log`) for detailed error messages.
+- **Download Fails**: Check your internet connection and URL validity
+- **FFmpeg Missing**: Install FFmpeg for full format support
+- **Disk Space Error**: Ensure at least 1GB free space
+- **Format Unavailable**: Try a different quality or format
 
----
+Check `~/.youtube_downloader/logs/downloader.log` for detailed error messages.
 
 ## Contributing
 
-Contributions are welcome! If you'd like to improve this project, please:
-
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Submit a pull request with your changes.
-
----
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to the branch
+5. Submit a pull request
 
 ## License
 
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
----
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## Acknowledgments
 
-- [yt-dlp](https://github.com/yt-dlp/yt-dlp) - The core library used for downloading videos.
-- [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI) - The GUI framework.
-- [FFmpeg](https://ffmpeg.org/) - For audio/video processing.
+- [yt-dlp](https://github.com/yt-dlp/yt-dlp)
+- [PySimpleGUI](https://github.com/PySimpleGUI/PySimpleGUI)
+- [FFmpeg](https://ffmpeg.org/)
+
+## Author
+
+[bilbywilby](https://github.com/bilbywilby)
 
 ---
 
-## Screenshots
-
-![Main Interface](https://via.placeholder.com/800x500?text=Main+Interface)
-*Example of the application's main interface.*
-
----
-
-## Contact
-
-For questions or feedback, please open an issue in the [GitHub repository](https://github.com/bilbywilby/Youtube_Downloader2.1/issues).
+For bug reports and feature requests, please [open an issue](https://github.com/your-username/youtube-downloader-pro/issues).
 ```
-
-You may want to adjust the content (e.g., screenshots, additional features) to better reflect the specifics of your application.

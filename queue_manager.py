@@ -17,9 +17,9 @@ class Task:
 
     def process(self):
         """Simulates the processing of the task."""
-        logging.info(f"Processing task: {self}")
+        logging.info("Processing task: %s", self)
         time.sleep(2)
-        logging.info(f"Task completed: {self}")
+        logging.info("Task completed: %s", self)
 
 class TaskQueue:
     """Manages a queue of tasks and their processing."""
