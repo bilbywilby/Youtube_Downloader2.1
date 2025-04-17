@@ -29,9 +29,10 @@ from dataclasses import dataclass, asdict
 from typing import Dict, List, Any, Optional, Union
 from urllib.parse import urlparse, parse_qs
 from functools import lru_cache, partial
+from datetime import datetime # Update the import
 
 # ----------- Version Info -----------
-VERSION = "2.0.1"
+VERSION = "2.0.2"
 AUTHOR = "bilbywilby"
 UPDATED = "2025-04-16"
 
@@ -91,8 +92,6 @@ logger = setup_logging()
 for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
     d.mkdir(parents=True, exist_ok=True)
     logger.info(f"Created directory: {d}")
-
-logger = setup_logging()
 
 # ----------- Error Classes -----------
 
