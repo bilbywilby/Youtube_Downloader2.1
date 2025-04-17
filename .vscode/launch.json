@@ -2,6 +2,61 @@
   "version": "0.2.0",
   "configurations": [
     {
+        "command": "npm start",
+        "name": "Run npm start",
+        "request": "launch",
+        "type": "node-terminal"
+    },
+    {
+        "name": "Run npm test",
+        "type": "node-terminal",
+        "request": "launch",
+        "command": "npm test"
+    },
+    {
+        "name": "Run npm test (watch)",
+        "type": "node-terminal",
+        "request": "launch",
+        "command": "npm test -- --watch"
+    },
+    {
+        "name": "Run npm test (debug)",
+        "type": "node-terminal",
+        "request": "launch",
+        "command": "npm test -- --watch --debug"
+    },
+    {
+      "name": ".NET Core Launch (web)",
+      "type": ".NET Core Launch (web)",
+      "request": ".NET Core Launch (web)"
+    },
+    {
+        "name": "CMake: Debug project",
+        "type": "cmake",
+        "request": "launch",
+        "cmakeDebugType": "build",
+        "clean": false,
+        "configureAll": false
+    },
+    {
+        "name": "CMake: Debug project (GDB)",
+        "type": "cmake",
+        "request": "launch",
+        "cmakeDebugType": "build",
+        "clean": false,
+        "configureAll": false,
+        "MIMode": "gdb"
+    },
+    {
+        "name": "CMake: Debug project (Win)",
+        "type": "cmake",
+        "request": "launch",
+        "cmakeDebugType": "build",
+        "clean": false,
+        "configureAll": false,
+        "MIMode": "lldb"
+    },
+    {
         "type": "cmake",
         "request": "launch",
         "name": "CMake: Configure project",
