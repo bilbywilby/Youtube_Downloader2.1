@@ -2,6 +2,236 @@
   "version": "0.2.0",
   "configurations": [
     {
+        "name": "Python C++ Debugger",
+        "type": "pythoncpp",
+        "request": "launch",
+        "pythonConfig": "default",
+        "cppConfig": "!!pick 'default (win) Attach' or 'default (gdb) Attach'"
+    },
+    {
+        "name": "Python C++ Debugger (GDB)",
+        "type": "pythoncpp",
+        "request": "launch",
+        "pythonConfig": "default",
+        "cppConfig": "default (gdb) Attach"
+    },
+    {
+        "name": "Python C++ Debugger (Win)",
+        "type": "pythoncpp",
+        "request": "launch",
+        "pythonConfig": "default",
+        "cppConfig": "default (win) Attach"
+    },
+    {
+      "name": ".NET Core Launch (web)",
+      "type": "coreclr",
+      "request": "launch",
+      "preLaunchTask": "build",
+      ".NET Core Launch (web)": {
+          "commandName": ".NET Core Launch (web)",
+          "launchBrowser": true,
+          "environmentVariables": {
+              "ASPNETCORE_ENVIRONMENT": "Development"
+          }
+      }
+    },
+    {
+        "name": ".NET Core Attach",
+        "type": "coreclr",
+        "request": "attach",
+        "processId": "${command:pickProcess}"
+    },
+    {
+        "name": ".NET Core Debug Console",
+        "type": "coreclr",
+        "request": "launch",
+        "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
+        "args": [],
+        "cwd": "${workspaceRoot}",
+        "stopAtEntry": false,
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        }
+    },
+    {
+        "name": ".NET Core Debug Console (Windows)",
+        "type": "coreclr",
+        "request": "launch",
+        "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
+        "args": [],
+        "cwd": "${workspaceRoot}",
+        "stopAtEntry": false,
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        },
+        "windows": {
+            "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.exe"
+        }
+    },
+    {
+        "name": ".NET Core Debug Console (Linux)",
+        "type": "coreclr",
+        "request": "launch",
+        "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
+        "args": [],
+        "cwd": "${workspaceRoot}",
+        "stopAtEntry": false,
+        "serverReadyAction": {
+            "action": "openExternally",
+            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+        },
+        "linux": {
+            "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader"
+        }
+    },
+    {
+        "name": "Cake: Debug Script (.NET Tool)",
+        "type": "coreclr",
+        "request": "launch",
+        "program": "dotnet-cake",
+        "windows": {
+            "program": "dotnet-cake.exe"
+        },
+        "args": [
+            "${workspaceRoot}/build.cake",
+            "--debug",
+            "--verbosity=diagnostic"
+        ],
+        "cwd": "${workspaceRoot}",
+        "stopAtEntry": false,
+        "externalConsole": false,
+        "justMyCode": false
+    },
+    {
+      "name": "Python: Flask",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "${workspaceFolder}/youtube_downloader.py",
+        "FLASK_ENV": "development"
+      },
+      "args": [
+        "run"
+      ],
+      "jinja": true,
+      "justMyCode": false
+    },
+    {
+      "name": "Python: Flask (Integrated Terminal)",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "${workspaceFolder}/youtube_downloader.py",
+        "FLASK_ENV": "development"
+      },
+      "args": [
+        "run"
+      ],
+      "jinja": true,
+      "justMyCode": false,
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "Python: Flask (External Terminal)",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "${workspaceFolder}/youtube_downloader.py",
+        "FLASK_ENV": "development"
+      },
+      "args": [
+        "run"
+      ],
+      "jinja": true,
+      "justMyCode": false,
+      "console": "externalTerminal"
+    },
+    {
+      "name": "Python: Flask (Debug)",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "${workspaceFolder}/youtube_downloader.py",
+        "FLASK_ENV": "development"
+      },
+      "args": [
+        "run"
+      ],
+      "jinja": true,
+      "justMyCode": false,
+      "console": "integratedTerminal",
+      "debugOptions": [
+        "WaitOnAbnormalExit",
+        "WaitOnNormalExit",
+        "RedirectOutput"
+      ]
+    },
+    {
+      "name": "Python: Flask (Debug - External Terminal)",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "${workspaceFolder}/youtube_downloader.py",
+        "FLASK_ENV": "development"
+      },
+      "args": [
+        "run"
+      ],
+      "jinja": true,
+      "justMyCode": false,
+      "console": "externalTerminal",
+      "debugOptions": [
+        "WaitOnAbnormalExit",
+        "WaitOnNormalExit",
+        "RedirectOutput"
+      ]
+    },
+    {
+      "name": "Python: Flask (Debug - Integrated Terminal)",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "${workspaceFolder}/youtube_downloader.py",
+        "FLASK_ENV": "development"
+      },
+      "args": [
+        "run"
+      ],
+      "jinja": true,
+      "justMyCode": false,
+      "console": "integratedTerminal",
+      "debugOptions": [
+        "WaitOnAbnormalExit",
+        "WaitOnNormalExit",
+        "RedirectOutput"
+      ]
+    },
+    {
+      "name": "Python: Flask (Debug - Integrated Terminal - No Debug Options)",
+      "type": "python",
+      "request": "launch",
+      "module": "flask",
+      "env": {
+        "FLASK_APP": "${workspaceFolder}/youtube_downloader.py",
+        "FLASK_ENV": "development"
+      },
+      "args": [
+        "run"
+      ],
+      "jinja": true,
+      "justMyCode": false,
+      "console": "integratedTerminal"
+    },
+{"name":"Python Debugger: Current File","type":"debugpy","request":"launch","program":"${file}","console":"integratedTerminal"},
+    {
       "name": "Python: YouTube Downloader",
       "type": "debugpy",
       "request": "launch",
