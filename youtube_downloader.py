@@ -847,7 +847,532 @@ class FileManager:
                 }
             )
 
-        return postprocessors
+        return postproclass YoutubeDownloaderGUI:
+    """Main GUI implementation with enhanced features"""
+
+    def __init__(self):
+        from config_manager import ConfigManager
+        from history_manager import HistoryManager
+        try:
+            from queue_manager import QueueManager
+        except ImportError:
+            raise ImportError("The 'queue_manager' module is missing. Ensure 'queue_manager.py' exists in the same directory or is in the Python path.")
+
+        self.config_manager = ConfigManager()
+        self.history_manager = HistoryManager()
+        self.queue_manager = QueueManager()
+
+        # Set theme
+        sg.theme(self.config_manager.config.theme)
+
+        # Create window
+        self.window = self._create_window()
+        self.download_manager = DownloadManager(
+            self.config_manager,
+            self.window,
+            self.history_manager,
+            self.queue_manager
+        )
+
+        # Set up keyboard shortcuts
+        self.shortcuts = {
+            'ctrl+q': '-EXIT-',
+            'ctrl+a': '-ADD-',
+            'ctrl+s': '-START-',
+            'ctrl+d': '-DETECT-',
+            'ctrl+p': '-PREVIEW-',
+            'ctrl+c': '-CANCEL-',
+            'ctrl+o': '-OPEN_FOLDER-'
+        }
+
+        # Create system tray
+        self.tray = self._create_tray()
+
+        # Initialize
+        self._load_initial_queue()
+        self._update_history_display()
+
+        logger.info("Application initialized successfully")
+
+    def _create_window(self) -> sg.Window:
+        """Create main application window with improved layout"""
+        # Tooltips for UI elements
+        tooltips = {
+            '-URL-': 'Enter a valid YouTube URL here',
+            '-FORMAT-': 'Select the desired video format',
+            '-QUALITY-': 'Select video quality',
+            '-AUDIO_ONLY-': 'Extract audio only from the video',
+            '-DIR-': 'Choose where to save downloaded files',
+            '-SUBS-': 'Download video subtitles if available',
+            '-AUDIO_FORMAT-': 'Choose the audio format for extraction',
+            '-PLAYLIST-': 'Download entire playlist'
+        }
+
+        # URL Section
+        url_section = [
+            [sg.Text("YouTube URL:", font=('Helvetica', 11), pad=((5,5),(10,5)))],
+            [sg.Input(key='-URL-', size=(60, 1), font=('Helvetica', 10),
+                     tooltip=tooltips['-URL-'], pad=((5,5),(0,5)))],
+            [sg.Button(' Detect Format', key='-DETECT-', size=(15, 1)),
+             sg.Button(' Preview', key='-PREVIEW-', size=(15, 1)),
+             sg.Button(' Paste', key='-PASTE-', size=(15, 1))]
+        ]
+
+        # Options Section
+        options_section = [
+            [sg.Frame('Download Options', [
+                [sg.Text("Save to:", font=('Helvetica', 10))],
+                [sg.Input(default_text=self.config_manager.config.download_dir,
+                         key='-DIR-', size=(50, 1), tooltip=tooltips['-DIR-']),
+                 sg.FolderBrowse()],
+                [sg.Frame('Video Options', [
+                    [sg.Text("Format:"),
+                     sg.Combo(list(ALLOWED_VIDEO_FORMATS), key='-FORMAT-',
+                             default_value='mp4', size=(10, 1),
+                             tooltip=tooltips['-FORMAT-'])],
+                    [sg.Text("Quality:"),
+                     sg.Combo(['best', '4K', '1440p', '1080p', '720p', '480p', '360p'],
+                             key='-QUALITY-', default_value='1080p',
+                             size=(10, 1), tooltip=tooltips['-QUALITY-'])],
+                    [sg.Checkbox('Download Subtitles', key='-SUBS-',
+                               tooltip=tooltips['-SUBS-'])],
+                    [sg.Checkbox('Download Playlist', key='-PLAYLIST-',
+                               tooltip=tooltips['-PLAYLIST-'])]
+                ])],
+                [sg.Frame('Audio Options', [
+                    [sg.Checkbox('Extract Audio Only', key='-AUDIO_ONLY-',
+                               tooltip=tooltips['-AUDIO_ONLY-'])],
+                    [sg.Text("Format:"),
+                     sg.Combo(list(ALLOWED_AUDIO_FORMATS), key='-AUDIO_FORMAT-',
+                             default_value='mp3', size=(10, 1),
+                             tooltip=tooltips['-AUDIO_FORMAT-'])]
+                ])]
+            ])]
+        ]
+
+        # Queue Section
+        queue_section = [
+            [sg.Frame('Download Queue', [
+                [sg.Multiline(size=(70, 5), key='-QUEUE-', disabled=True,
+                            autoscroll=True, font=('Courier', 10))],
+                [sg.Button(' Add to Queue', key='-ADD-', size=(15, 1)),
+                 sg.Button(' Remove', key='-REMOVE-', size=(15, 1)),
+                 sg.Button(' Clear Queue', key='-CLEAR_QUEUE-', size=(15, 1))],
+                [sg.Button(' Start Download', key='-START-', size=(15, 1)),
+                 sg.Button(' Cancel', key='-CANCEL-', size=(15, 1)),
+                 sg.Button(' Settings', key='-SETTINGS-', size=(15, 1))],
+                [sg.Button(' Open Folder', key='-OPEN_FOLDER-', size=(15, 1))]
+            ])],
+        ]
+
+        # Progress Section
+        progress_section = [
+            [sg.Frame('Progress', [
+                [sg.ProgressBar(100, orientation='h', size=(50, 20),
+                              key='-PROGRESS-')],
+                [sg.Text('Status:', font=('Helvetica', 10)),
+                 sg.Text('Waiting...', key='-STATUS-', size=(40, 1),
+                        font=('Helvetica', 10))],
+                [sg.Text('Speed:', font=('Helvetica', 10)),
+                 sg.Text('0 KB/s', key='-SPEED-', size=(15, 1),
+                        font=('Helvetica', 10)),
+                 sg.Text('ETA:', font=('Helvetica', 10)),
+                 sg.Text('--:--', key='-ETA-', size=(15, 1),
+                        font=('Helvetica', 10))],
+                [sg.Text('Downloaded:', font=('Helvetica', 10)),
+                 sg.Text('0%', key='-DOWNLOADED-', size=(15, 1),
+                        font=('Helvetica', 10))],
+                [sg.Text('Total Size:', font=('Helvetica', 10)),
+                 sg.Text('0 MB', key='-TOTAL_SIZE-', size=(15, 1),
+                        font=('Helvetica', 10))],
+                [sg.Text('Remaining Time:', font=('Helvetica', 10)),
+                 sg.Text('--:--', key='-REMAINING_TIME-', size=(15, 1),
+                        font=('Helvetica', 10))],
+            ])],
+        ]
+
+        # History Section
+        history_section = [
+            [sg.Frame('Download History', [
+                [sg.Multiline(size=(70, 5), key='-HISTORY-', disabled=True,
+                            autoscroll=True, font=('Courier', 10))],
+                [sg.Button(' Export History', key='-EXPORT_HISTORY-',
+                          size=(15, 1)),
+                 sg.Button(' Clear History', key='-CLEAR_HISTORY-',
+                          size=(15, 1))],
+                [sg.Button(' Open History Folder', key='-OPEN_HISTORY_FOLDER-',
+                          size=(15, 1))]
+            ])],
+        ]
+
+        # Footer Section
+        footer_section = [
+            [sg.Button(' About', key='-ABOUT-'),
+             sg.Button(' Exit', key='-EXIT-')],
+            [sg.Text(f'v{VERSION}', font=('Helvetica', 8), pad=((5,5),(5,5)))],
+        ]
+
+        # Combine all sections
+        layout = [
+            url_section,
+            options_section,
+            queue_section,
+            progress_section,
+            history_section,
+            footer_section
+        ]
+
+        return sg.Window(
+            'YouTube Downloader',
+            layout,
+            finalize=True,
+            return_keyboard_events=True,
+            resizable=True,
+            icon=self._get_icon(),
+            enable_close_attempted_event=True
+        )
+
+    def _create_tray(self) -> Optional[sg.SystemTray]:
+        """Create system tray icon with error handling"""
+        try:
+            menu = ['', ['Show Window', 'Hide Window', '---', 'Exit']]
+            return sg.SystemTray(menu, filename=self._get_icon())
+        except Exception as e:
+            logger.warning(f"Failed to create system tray: {e}")
+            return None
+
+    def _get_icon(self) -> Optional[bytes]:
+        """Get application icon"""
+        try:
+            icon_path = Path(__file__).parent / 'assets' / 'icon.png'
+            if icon_path.exists():
+                return icon_path.read_bytes()
+        except Exception:
+            return None
+        return None
+
+    def run(self):
+        """Main application loop with improved event handling"""
+        try:
+            while True:
+                # Handle system tray events
+                if self.tray:
+                    tray_event = self.tray.read(timeout=100)
+                    self._handle_tray_event(tray_event)
+
+                # Handle window events
+                event, values = self.window.read(timeout=100)
+
+                # Handle window close
+                if event in (None, '-EXIT-'):
+                    if self._confirm_exit():
+                        break
+                    continue
+
+                # Handle keyboard shortcuts
+                event = self._handle_keyboard_shortcuts(event)
+
+                # Handle other events
+                self._handle_event(event, values)
+
+        except Exception as e:
+            logger.critical(f"Application crash: {e}", exc_info=True)
+            sg.popup_error(f"Critical error: {e}\nCheck logs for details.")
+        finally:
+            self._cleanup()
+
+    def _handle_event(self, event: str, values: Dict[str, Any]):
+        """Handle window events"""
+        tryimport PySimpleGUI as sg
+import yt_dlp
+import os
+import re
+import logging
+import logging.handlers
+import threading
+import time
+import urllib
+import requests
+import subprocess
+import platform
+import json
+import random
+import string
+import base64
+import sqlite3
+import datetime
+import uuid
+import webbrowser
+import shutil
+import psutil
+import tempfile
+from pathlib import Path
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from queue import Queue, Empty
+import validators
+from dataclasses import dataclass, asdict
+from typing import Dict, List, Any, Optional, Union
+from urllib.parse import urlparse, parse_qs
+from functools import lru_cache, partial
+from datetime import datetime
+
+# ----------- Version Info -----------
+VERSION = "2.0.2"
+AUTHOR = "bilbywilby"
+UPDATED = "2025-04-16"
+
+# ----------- App Directories & Constants -----------
+APP_ROOT = Path.home() / '.youtube_downloader'
+CONFIG_PATH = APP_ROOT / 'config.json'
+HISTORY_PATH = APP_ROOT / 'history.json'
+QUEUE_PATH = APP_ROOT / 'queue.json'
+LOG_DIR = APP_ROOT / 'logs'
+DOWNLOADS_ROOT = APP_ROOT / 'downloads'
+TEMP_DIR = APP_ROOT / 'temp'
+CACHE_DIR = APP_ROOT / 'cache'
+LOG_FILE = LOG_DIR / 'downloader.log'
+
+# File formats and limits
+ALLOWED_VIDEO_FORMATS = {'mp4', 'mkv', 'webm'}
+ALLOWED_AUDIO_FORMATS = {'mp3', 'wav', 'm4a', 'aac', 'flac'}
+MAX_FILENAME_LENGTH = 128
+MIN_DISK_SPACE_MB = 1024  # 1GB minimum
+MAX_RETRIES = 3
+RETRY_DELAY = 5
+CHUNK_SIZE = 1024 * 1024  # 1MB chunks for downloads
+
+# ----------- Logging Setup -----------
+
+
+def setup_logging():
+    formatter = logging.Formatter(
+        '%(asctime)s - %(levelname)s - [%(filename)s:%(lineno)d] - %(message)s'
+    )
+
+    # File handler with rotation
+    file_handler = logging.handlers.RotatingFileHandler(
+        LOG_FILE,
+        maxBytes=5*1024*1024,  # 5MB
+        backupCount=5,
+        encoding='utf-8'
+    )
+    file_handler.setFormatter(formatter)
+
+    # Console handler
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+
+    # Configure root logger
+    root_logger = logging.getLogger()
+    root_logger.setLevel(logging.INFO)
+    root_logger.addHandler(file_handler)
+    root_logger.addHandler(console_handler)
+
+    return logging.getLogger("YouTubeDownloader")
+
+
+logger = setup_logging()
+
+# Create necessary directories
+for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
+    d.mkdir(parents=True, exist_ok=True)
+    logger.info(f"Created directory: {d}")
+
+# ----------- Error Classes -----------
+
+
+class DownloaderError(Exception):
+    """
+    DownloaderError is a custom exception class used as the base for all
+    downloader-related errors.
+
+    Attributes:
+        message (str): A descriptive error message explaining the cause of the exception.
+
+    Methods:
+        __init__(message: str): Initializes the DownloaderError with a specific error message.
+    """
+    """Base exception for downloader errors"""
+    def __init__(self, message: str):
+        self.message = message
+        super().__init__(self.message)
+
+class ValidationError(DownloaderError):
+    """Validation related errors"""
+    pass
+
+class DiskSpaceError(DownloaderError):
+    """Disk space related errors"""
+    pass
+
+class NetworkError(DownloaderError):
+    """Network related errors"""
+    pass
+
+class ConfigError(DownloaderError):
+    """Configuration related errors"""
+    pass
+
+
+# ----------- Data Classes -----------
+
+
+@dataclass
+class AppConfig:
+    download_dir: str = str(DOWNLOADS_ROOT)
+    max_workers: int = 4
+    default_format: str = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/mp4'
+    default_resolution: str = 'best'
+    default_audio_format: str = 'mp3'
+    include_metadata: bool = True
+    extract_thumbnail: bool = True
+    theme: str = 'Reddit'
+    use_ffmpeg: bool = False
+    auto_queue: bool = False
+    show_advanced: bool = False
+    max_download_size: int = 2048
+    rate_limit: int = 0
+    history_enabled: bool = True
+    max_retries: int = 3
+    retry_delay: int = 5
+    min_disk_space: int = 1024
+    preferred_protocol: str = 'https'
+    resume_downloads: bool = True
+    verify_ssl: bool = True
+    proxy: str = ''
+    download_archive: bool = True
+    archive_path: str = str(APP_ROOT / 'downloaded.txt')
+    notify_on_complete: bool = True
+
+    def validate(self) -> bool:
+        """Validate configuration values"""
+        try:
+            self.max_workers = max(1, min(int(self.max_workers), 10))
+            self.rate_limit = max(0, int(self.rate_limit))
+            self.max_download_size = max(0, int(self.max_download_size))
+            self.max_retries = max(1, min(int(self.max_retries), 10))
+            self.retry_delay = max(1, min(int(self.retry_delay), 30))
+            self.min_disk_space = max(100, int(self.min_disk_space))
+
+            # Validate download directory
+            download_dir = Path(self.download_dir)
+            if not download_dir.exists():
+                download_dir.mkdir(parents=True, exist_ok=True)
+
+            return True
+        except Exception as e:
+            logger.error(f"Configuration validation failed: {e}")
+            return False
+
+@dataclass
+class DownloadItem:
+    url: str
+    title: Optional[str] = None
+    format: str = 'mp4'
+    quality: str = 'best'
+    download_path: Optional[str] = None
+    status: str = 'pending'
+    progress: int = 0
+    speed: float = 0
+    eta: int = 0
+    error: Optional[str] = None
+    video_id: Optional[str] = None
+    filesize: Optional[int] = None
+    download_time: Optional[str] = None
+
+    def to_dict(self) -> Dict[str, Any]:
+        return asdict(self)
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'DownloadItem':
+        return cls(**data)
+
+# ----------- Utility Classes -----------
+
+
+class URLValidator:
+    """Enhanced URL validation and processing"""
+
+    YOUTUBE_PATTERNS = [
+        r'^https?:\/\/(?:www\.)?youtube\.com\/watch\?v=[\w-]+',
+        r'^https?:\/\/(?:www\.)?youtube\.com\/shorts\/[\w-]+',
+        r'^https?:\/\/youtu\.be\/[\w-]+',
+        r'^https?:\/\/(?:www\.)?youtube\.com\/playlist\?list=[\w-]+',
+    ]
+
+@staticmethod
+def is_valid_youtube_url(url: str) -> bool:
+    if not url or not isinstance(url, str):
+        return False
+
+    try:
+        return any(re.match(pattern, url, re.IGNORECASE)
+                  for pattern in URLValidator.YOUTUBE_PATTERNS)
+    except Exception as e:
+        logger.error(f"URL validation error: {e}")
+        return False
+
+@staticmethod
+@lru_cache(maxsize=128)
+def extract_video_id(url: str) -> Optional[str]:
+    """Extract video ID from YouTube URL with caching"""
+    try:
+        if not url or not isinstance(url, str):
+            return None
+
+        # Handle youtu.be URLs
+        if 'youtu.be' in url:
+            video_id = url.split('/')[-1].split('?')[0]
+            return video_id if video_id else None
+
+        # Handle youtube.com URLs
+        parsed_url = urlparse(url)
+        if 'youtube.com' in parsed_url.netloc:
+            if '/watch' in url:
+                video_id = parse_qs(parsed_url.query).get('v', [None])[0]
+            elif '/shorts/' in url:
+                video_id = url.split('/shorts/')[1].split('?')[0]
+            elif '/live/' in url:
+                video_id = url.split('/live/')[1].split('?')[0]
+            else:
+                return None
+
+            # Validate video ID format
+            if video_id and re.match(r'^[A-Za-z0-9_-]{11}$', video_id):
+                return video_id
+
+        return None
+    except (ValueError, AttributeError, IndexError) as e:
+        logger.error(f"Error extracting video ID: {e}")
+        return None
+
+    @staticmethod
+    def sanitize_url(url: str) -> str:
+        """Sanitize URL by removing potentially harmful characters"""
+        try:
+            if not url or not isinstance(url, str):
+                return ''
+
+            # Remove whitespace and common unsafe characters
+            sanitized = re.sub(r'[<>"\'`;)(]', '', url.strip())
+
+            # Ensure proper URL encoding
+            return urllib.parse.quote(sanitized, safe=':/?=&')
+        except Exception as e:
+            logger.error(f"Error sanitizing URL: {e}")
+            return ''
+
+class FileManager:
+    """Handle file operations with safety checks"""
+
+    @staticmethod
+    def sanitize_filename(filename: str) -> str:
+        """Create safe filename"""
+        # Remove invalid characters
+        safe_name = re.sub(r'[<>:"/|?*]', '', filename)
+        # Replace spaces and multiple dots
+        safe_name = re.sub(r's+', '_', safe_name)
+cessors
 
     def _progress_hook(self, download_item: DownloadItem, d: Dict[str, Any]):
         """Handle download progress updates"""
