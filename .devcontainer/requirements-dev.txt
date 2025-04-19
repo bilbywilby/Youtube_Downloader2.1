@@ -1,6 +1,6 @@
 # Core Dependencies
 PySimpleGUI==4.60.5                # GUI framework - fixed version for stability
-yt-dlp==2024.3.10                  # YouTube downloader core
+yt-dlp==2024.7.7                  # YouTube downloader core
 pytube==15.0.0                     # YouTube API integration
 pydantic[email]==2.6.1             # Data validation with email support
 
@@ -28,7 +28,7 @@ appdirs==1.4.4                     # App directories management
 python-dotenv==1.0.1               # Environment management
 uvloop==0.19.0                     # Fast event loop implementation
 orjson==3.9.10                     # Fast JSON parsing
-python-multipart==0.0.6            # Multipart form data parser
+python-multipart==0.0.18            # Multipart form data parser
 watchdog==3.0.0                    # File system monitoring
 
 # Database and Storage
@@ -39,17 +39,17 @@ redis==5.0.1                      # Optional caching support
 asyncpg==0.29.0                   # Async PostgreSQL support
 
 # Security
-cryptography==42.0.2              # Strong cryptography
+cryptography==44.0.1              # Strong cryptography
 python-jose[cryptography]==3.3.0   # JWT handling with crypto support
 argon2-cffi==23.1.0               # Password hashing
-certifi==2024.2.2                 # SSL certificates
+certifi==2024.7.4                 # SSL certificates
 pyOpenSSL==24.0.0                 # SSL/TLS toolkit
 bcrypt==4.1.2                     # Password hashing
 
 # Error Handling and Logging
 structlog==24.1.0                 # Structured logging
 python-json-logger==2.0.7         # JSON log formatter
-sentry-sdk==1.39.1                # Error tracking
+sentry-sdk==2.8.0                # Error tracking
 tenacity==8.2.3                   # Retry handling
 backoff==2.2.1                    # Backoff handler
 
