@@ -1,6 +1,6 @@
 # Core Dependencies
 PySimpleGUI==4.60.5                # GUI framework - fixed version for stability
-yt-dlp==2024.3.10                  # YouTube downloader core
+yt-dlp==2024.7.7                  # YouTube downloader core
 pytube==15.0.0                     # YouTube API integration
 pydantic[email]==2.6.1             # Data validation with email support
 
