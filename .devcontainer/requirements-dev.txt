@@ -28,7 +28,7 @@ appdirs==1.4.4                     # App directories management
 python-dotenv==1.0.1               # Environment management
 uvloop==0.19.0                     # Fast event loop implementation
 orjson==3.9.10                     # Fast JSON parsing
-python-multipart==0.0.6            # Multipart form data parser
+python-multipart==0.0.18            # Multipart form data parser
 watchdog==3.0.0                    # File system monitoring
 
 # Database and Storage
