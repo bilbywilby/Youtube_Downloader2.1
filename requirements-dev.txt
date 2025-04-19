@@ -1,6 +1,6 @@
 # Core Dependencies
 PySimpleGUI==4.60.5                # GUI framework - fixed version for stability
-yt-dlp==2024.3.10                  # YouTube downloader core
+yt-dlp==2024.7.7                  # YouTube downloader core
 pytube==15.0.0                     # YouTube API integration
 pydantic[email]==2.6.1             # Data validation with email support
 
@@ -14,7 +14,7 @@ moviepy==1.0.3                     # Video editing capabilities
 # Networking and Web
 requests[security]==2.31.0         # HTTP requests with security extras
 aiohttp[speedups]==3.9.3          # Async HTTP with performance extras
-urllib3==2.2.0                     # HTTP client
+urllib3==2.2.2                     # HTTP client
 beautifulsoup4==4.12.3            # HTML parsing
 lxml==5.1.0                       # XML/HTML processing
 validators==0.22.0                 # URL validation
