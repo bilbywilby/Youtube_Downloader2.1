@@ -1,3 +1,9 @@
+from urllib.parse import urlparse, parse_qs
+from typing import Dict, List, Any, Optional, Union
+from dataclasses import dataclass, asdict
+from queue import Queue, Empty
+import requests
+from datetime import datetime
 import base64
 import datetime
 import json
@@ -67,6 +73,7 @@ for d in [APP_ROOT, LOG_DIR, DOWNLOADS_ROOT, TEMP_DIR, CACHE_DIR]:
     logger.info(f"Created directory: {d}")
 
 # ----------- Error Classes -----------
+
 
 class DownloaderError(Exception):
     """
@@ -197,10 +204,6 @@ class URLValidator:
         r"^https?:\/\/(?:www\.)?youtube\.com\/playlist\?list=[\w-]+",
     ]
 
-
-
-
-
     @staticmethod
     def sanitize_url(url: str) -> str:
         """Sanitize URL by removing potentially harmful characters"""
@@ -314,7 +317,8 @@ class FormatDetector:
                 formats["video"].sort(
                     key=lambda x: (x.get("height", 0), x.get("tbr", 0)), reverse=True
                 )
-                formats["audio"].sort(key=lambda x: x.get("abr", 0), reverse=True)
+                formats["audio"].sort(
+                    key=lambda x: x.get("abr", 0), reverse=True)
 
                 return formats
 
@@ -333,39 +337,6 @@ class DownloadManager:
 
     def __init__(self, config_manager, window: sg.Window, queue_manager):
 
-
-import base64
-import datetime
-import json
-import logging
-import logging.handlers
-import os
-import platform
-import random
-import re
-import shutil
-import sqlite3
-import string
-import subprocess
-import tempfile
-import threading
-import time
-import urllib
-import uuid
-import webbrowser
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from dataclasses import asdict, dataclass
-from datetime import datetime
-from functools import lru_cache, partial
-from pathlib import Path
-from queue import Empty, Queue
-from typing import Any, Dict, List, Optional, Union
-from urllib.parse import parse_qs, urlparse
-
-import psutil
-import requests
-import validators
-import yt_dlp
 
 # ----------- Version Info -----------
 VERSION = "2.0.2"
@@ -700,7 +671,8 @@ class FileManager:
                     not self.download_queue.empty() and not self._cancel_event.is_set()
                 ):
                     download_item = self.download_queue.get()
-                    future = executor.submit(self._download_video, download_item)
+                    future = executor.submit(
+                        self._download_video, download_item)
                     self._active_downloads.add(future)
                     futures.append(future)
 
@@ -711,7 +683,8 @@ class FileManager:
                             self.history_manager.add_entry(result.to_dict())
                     except Exception as e:
                         logger.error(f"Download failed: {e}")
-                        self.window.write_event_value("-DOWNLOAD_ERROR-", str(e))
+                        self.window.write_event_value(
+                            "-DOWNLOAD_ERROR-", str(e))
                     finally:
                         self._active_downloads.remove(future)
 
@@ -730,7 +703,8 @@ class FileManager:
                 try:
                     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
                         # Extract video information
-                        info = ydl.extract_info(download_item.url, download=False)
+                        info = ydl.extract_info(
+                            download_item.url, download=False)
                         if not info:
                             raise ValueError("No video information found")
 
@@ -749,7 +723,8 @@ class FileManager:
                 except yt_dlp.DownloadError as e:
                     if attempt == self.config.config.max_retries - 1:
                         raise
-                    logger.warning(f"Download attempt {attempt + 1} failed: {e}")
+                    logger.warning(
+                        f"Download attempt {attempt + 1} failed: {e}")
                     time.sleep(self.config.config.retry_delay)
 
             raise yt_dlp.DownloadError(
@@ -812,7 +787,8 @@ class FileManager:
 
     def _get_output_template(self, download_item: DownloadItem) -> str:
         """Generate output template with organized structure"""
-        base_dir = Path(download_item.download_path or self.config.config.download_dir)
+        base_dir = Path(
+            download_item.download_path or self.config.config.download_dir)
         date_str = datetime.now().strftime("%Y-%m")
         return str(base_dir / date_str / "%(title)s.%(ext)s")
 
@@ -828,24 +804,16 @@ class FileManager:
             }
         )
 
-        # Embed thumbnail if possible
-        if self.config.config.extract_thumbnail:
-<<<<<<< HEAD
-            postprocessors.append(
-                {
-                    "key": "EmbedThumbnail",
-                    "already_have_thumbnail": False,
-                }
-            )
-=======
-            postprocessor.append({
-                'key': 'EmbedThumbnail',
-                'already_have_thumbnail': False,
-            })
->>>>>>> 4d28d24 (`Refactor launch.json, settings.json, config_manager.py, and youtube_downloader.py`)
 
-        # Extract audio if requested
-        if download_item.format in ALLOWED_AUDIO_FORMATS:
+# Embed thumbnail if possible
+if self.config.config.extract_thumbnail:
+    postprocessors.append({
+        'key': 'EmbedThumbnail',
+        'already_have_thumbnail': False,
+    })
+
+       # Extract audio if requested
+       if download_item.format in ALLOWED_AUDIO_FORMATS:
             postprocessors.append(
                 {
                     "key": "FFmpegExtractAudio",
@@ -854,8 +822,10 @@ class FileManager:
                 }
             )
 
-        return postproclass YoutubeDownloaderGUI:
-    """Main GUI implementation with enhanced features"""
+            return postprocessors
+
+    class YoutubeDownloaderGUI:
+        """Main GUI implementation with enhanced features"""
 
     def __init__(self):
         from config_manager import ConfigManager
@@ -863,7 +833,8 @@ class FileManager:
         try:
             from queue_manager import QueueManager
         except ImportError:
-            raise ImportError("The 'queue_manager' module is missing. Ensure 'queue_manager.py' exists in the same directory or is in the Python path.")
+            raise ImportError(
+                "The 'queue_manager' module is missing. Ensure 'queue_manager.py' exists in the same directory or is in the Python path.")
 
         self.config_manager = ConfigManager()
         self.history_manager = HistoryManager()
@@ -917,9 +888,10 @@ class FileManager:
 
         # URL Section
         url_section = [
-            [sg.Text("YouTube URL:", font=('Helvetica', 11), pad=((5,5),(10,5)))],
+            [sg.Text("YouTube URL:", font=(
+                'Helvetica', 11), pad=((5, 5), (10, 5)))],
             [sg.Input(key='-URL-', size=(60, 1), font=('Helvetica', 10),
-                     tooltip=tooltips['-URL-'], pad=((5,5),(0,5)))],
+                     tooltip=tooltips['-URL-'], pad=((5, 5), (0, 5)))],
             [sg.Button(' Detect Format', key='-DETECT-', size=(15, 1)),
              sg.Button(' Preview', key='-PREVIEW-', size=(15, 1)),
              sg.Button(' Paste', key='-PASTE-', size=(15, 1))]
@@ -930,29 +902,29 @@ class FileManager:
             [sg.Frame('Download Options', [
                 [sg.Text("Save to:", font=('Helvetica', 10))],
                 [sg.Input(default_text=self.config_manager.config.download_dir,
-                         key='-DIR-', size=(50, 1), tooltip=tooltips['-DIR-']),
+                          key='-DIR-', size=(50, 1), tooltip=tooltips['-DIR-']),
                  sg.FolderBrowse()],
                 [sg.Frame('Video Options', [
                     [sg.Text("Format:"),
                      sg.Combo(list(ALLOWED_VIDEO_FORMATS), key='-FORMAT-',
-                             default_value='mp4', size=(10, 1),
-                             tooltip=tooltips['-FORMAT-'])],
+                              default_value='mp4', size=(10, 1),
+                              tooltip=tooltips['-FORMAT-'])],
                     [sg.Text("Quality:"),
                      sg.Combo(['best', '4K', '1440p', '1080p', '720p', '480p', '360p'],
-                             key='-QUALITY-', default_value='1080p',
-                             size=(10, 1), tooltip=tooltips['-QUALITY-'])],
+                              key='-QUALITY-', default_value='1080p',
+                              size=(10, 1), tooltip=tooltips['-QUALITY-'])],
                     [sg.Checkbox('Download Subtitles', key='-SUBS-',
-                               tooltip=tooltips['-SUBS-'])],
+                                 tooltip=tooltips['-SUBS-'])],
                     [sg.Checkbox('Download Playlist', key='-PLAYLIST-',
-                               tooltip=tooltips['-PLAYLIST-'])]
+                                 tooltip=tooltips['-PLAYLIST-'])]
                 ])],
                 [sg.Frame('Audio Options', [
                     [sg.Checkbox('Extract Audio Only', key='-AUDIO_ONLY-',
-                               tooltip=tooltips['-AUDIO_ONLY-'])],
+                                 tooltip=tooltips['-AUDIO_ONLY-'])],
                     [sg.Text("Format:"),
                      sg.Combo(list(ALLOWED_AUDIO_FORMATS), key='-AUDIO_FORMAT-',
-                             default_value='mp3', size=(10, 1),
-                             tooltip=tooltips['-AUDIO_FORMAT-'])]
+                              default_value='mp3', size=(10, 1),
+                              tooltip=tooltips['-AUDIO_FORMAT-'])]
                 ])]
             ])]
         ]
@@ -961,7 +933,7 @@ class FileManager:
         queue_section = [
             [sg.Frame('Download Queue', [
                 [sg.Multiline(size=(70, 5), key='-QUEUE-', disabled=True,
-                            autoscroll=True, font=('Courier', 10))],
+                              autoscroll=True, font=('Courier', 10))],
                 [sg.Button(' Add to Queue', key='-ADD-', size=(15, 1)),
                  sg.Button(' Remove', key='-REMOVE-', size=(15, 1)),
                  sg.Button(' Clear Queue', key='-CLEAR_QUEUE-', size=(15, 1))],
@@ -976,25 +948,25 @@ class FileManager:
         progress_section = [
             [sg.Frame('Progress', [
                 [sg.ProgressBar(100, orientation='h', size=(50, 20),
-                              key='-PROGRESS-')],
+                                key='-PROGRESS-')],
                 [sg.Text('Status:', font=('Helvetica', 10)),
                  sg.Text('Waiting...', key='-STATUS-', size=(40, 1),
-                        font=('Helvetica', 10))],
+                         font=('Helvetica', 10))],
                 [sg.Text('Speed:', font=('Helvetica', 10)),
                  sg.Text('0 KB/s', key='-SPEED-', size=(15, 1),
-                        font=('Helvetica', 10)),
+                         font=('Helvetica', 10)),
                  sg.Text('ETA:', font=('Helvetica', 10)),
                  sg.Text('--:--', key='-ETA-', size=(15, 1),
-                        font=('Helvetica', 10))],
+                         font=('Helvetica', 10))],
                 [sg.Text('Downloaded:', font=('Helvetica', 10)),
                  sg.Text('0%', key='-DOWNLOADED-', size=(15, 1),
-                        font=('Helvetica', 10))],
+                         font=('Helvetica', 10))],
                 [sg.Text('Total Size:', font=('Helvetica', 10)),
                  sg.Text('0 MB', key='-TOTAL_SIZE-', size=(15, 1),
-                        font=('Helvetica', 10))],
+                         font=('Helvetica', 10))],
                 [sg.Text('Remaining Time:', font=('Helvetica', 10)),
                  sg.Text('--:--', key='-REMAINING_TIME-', size=(15, 1),
-                        font=('Helvetica', 10))],
+                         font=('Helvetica', 10))],
             ])],
         ]
 
@@ -1002,13 +974,13 @@ class FileManager:
         history_section = [
             [sg.Frame('Download History', [
                 [sg.Multiline(size=(70, 5), key='-HISTORY-', disabled=True,
-                            autoscroll=True, font=('Courier', 10))],
+                              autoscroll=True, font=('Courier', 10))],
                 [sg.Button(' Export History', key='-EXPORT_HISTORY-',
-                          size=(15, 1)),
+                           size=(15, 1)),
                  sg.Button(' Clear History', key='-CLEAR_HISTORY-',
-                          size=(15, 1))],
+                           size=(15, 1))],
                 [sg.Button(' Open History Folder', key='-OPEN_HISTORY_FOLDER-',
-                          size=(15, 1))]
+                           size=(15, 1))]
             ])],
         ]
 
@@ -1016,7 +988,8 @@ class FileManager:
         footer_section = [
             [sg.Button(' About', key='-ABOUT-'),
              sg.Button(' Exit', key='-EXIT-')],
-            [sg.Text(f'v{VERSION}', font=('Helvetica', 8), pad=((5,5),(5,5)))],
+            [sg.Text(f'v{VERSION}', font=(
+                'Helvetica', 8), pad=((5, 5), (5, 5)))],
         ]
 
         # Combine all sections
@@ -1090,38 +1063,7 @@ class FileManager:
 
     def _handle_event(self, event: str, values: Dict[str, Any]):
         """Handle window events"""
-        tryimport PySimpleGUI as sg
-import yt_dlp
-import os
-import re
-import logging
-import logging.handlers
-import threading
-import time
-import urllib
-import requests
-import subprocess
-import platform
-import json
-import random
-import string
-import base64
-import sqlite3
-import datetime
-import uuid
-import webbrowser
-import shutil
-import psutil
-import tempfile
-from pathlib import Path
-from concurrent.futures import ThreadPoolExecutor, as_completed
-from queue import Queue, Empty
-import validators
-from dataclasses import dataclass, asdict
-from typing import Dict, List, Any, Optional, Union
-from urllib.parse import urlparse, parse_qs
-from functools import lru_cache, partial
-from datetime import datetime
+        tryimport as sg
 
 # ----------- Version Info -----------
 VERSION = "2.0.2"
@@ -1200,21 +1142,26 @@ class DownloaderError(Exception):
         __init__(message: str): Initializes the DownloaderError with a specific error message.
     """
     """Base exception for downloader errors"""
+
     def __init__(self, message: str):
         self.message = message
         super().__init__(self.message)
+
 
 class ValidationError(DownloaderError):
     """Validation related errors"""
     pass
 
+
 class DiskSpaceError(DownloaderError):
     """Disk space related errors"""
     pass
 
+
 class NetworkError(DownloaderError):
     """Network related errors"""
     pass
+
 
 class ConfigError(DownloaderError):
     """Configuration related errors"""
@@ -1271,6 +1218,7 @@ class AppConfig:
             logger.error(f"Configuration validation failed: {e}")
             return False
 
+
 @dataclass
 class DownloadItem:
     url: str
@@ -1307,6 +1255,7 @@ class URLValidator:
         r'^https?:\/\/(?:www\.)?youtube\.com\/playlist\?list=[\w-]+',
     ]
 
+
 @staticmethod
 def is_valid_youtube_url(url: str) -> bool:
     if not url or not isinstance(url, str):
@@ -1314,10 +1263,11 @@ def is_valid_youtube_url(url: str) -> bool:
 
     try:
         return any(re.match(pattern, url, re.IGNORECASE)
-                  for pattern in URLValidator.YOUTUBE_PATTERNS)
+                   for pattern in URLValidator.YOUTUBE_PATTERNS)
     except Exception as e:
         logger.error(f"URL validation error: {e}")
         return False
+
 
 @staticmethod
 @lru_cache(maxsize=128)
@@ -1369,6 +1319,7 @@ def extract_video_id(url: str) -> Optional[str]:
             logger.error(f"Error sanitizing URL: {e}")
             return ''
 
+
 class FileManager:
     """Handle file operations with safety checks"""
 
@@ -1379,9 +1330,11 @@ class FileManager:
         safe_name = re.sub(r'[<>:"/|?*]', '', filename)
         # Replace spaces and multiple dots
         safe_name = re.sub(r's+', '_', safe_name)
+
+
 cessors
 
-    def _progress_hook(self, download_item: DownloadItem, d: Dict[str, Any]):
+   def _progress_hook(self, download_item: DownloadItem, d: Dict[str, Any]):
         """Handle download progress updates"""
         if d["status"] == "downloading":
             # Calculate progress
@@ -1392,7 +1345,8 @@ cessors
             if d.get("total_bytes"):
                 progress = int(d["downloaded_bytes"] / d["total_bytes"] * 100)
             elif d.get("total_bytes_estimate"):
-                progress = int(d["downloaded_bytes"] / d["total_bytes_estimate"] * 100)
+                progress = int(d["downloaded_bytes"] /
+                               d["total_bytes_estimate"] * 100)
 
             # Update download item
             download_item.progress = progress
@@ -1412,7 +1366,8 @@ cessors
 
         elif d["status"] == "finished":
             self.window.write_event_value(
-                "-FINISHED-", {"filename": d["filename"], "url": download_item.url}
+                "-FINISHED-", {"filename": d["filename"],
+                    "url": download_item.url}
             )
 
     def _update_queue_display(self):
@@ -1512,7 +1467,8 @@ class YoutubeDownloaderGUI:
 
         # URL Section
         url_section = [
-            [sg.Text("YouTube URL:", font=("Helvetica", 11), pad=((5, 5), (10, 5)))],
+            [sg.Text("YouTube URL:", font=(
+                "Helvetica", 11), pad=((5, 5), (10, 5)))],
             [
                 sg.Input(
                     key="-URL-",
@@ -1639,16 +1595,21 @@ class YoutubeDownloaderGUI:
                             )
                         ],
                         [
-                            sg.Button("➕ Add to Queue", key="-ADD-", size=(15, 1)),
-                            sg.Button("➖ Remove", key="-REMOVE-", size=(15, 1)),
+                            sg.Button("➕ Add to Queue",
+                                      key="-ADD-", size=(15, 1)),
+                            sg.Button("➖ Remove", key="-REMOVE-",
+                                      size=(15, 1)),
                             sg.Button(
                                 "🗑 Clear Queue", key="-CLEAR_QUEUE-", size=(15, 1)
                             ),
                         ],
                         [
-                            sg.Button("▶️ Start Download", key="-START-", size=(15, 1)),
-                            sg.Button("⏹ Cancel", key="-CANCEL-", size=(15, 1)),
-                            sg.Button("⚙️ Settings", key="-SETTINGS-", size=(15, 1)),
+                            sg.Button("▶️ Start Download",
+                                      key="-START-", size=(15, 1)),
+                            sg.Button("⏹ Cancel", key="-CANCEL-",
+                                      size=(15, 1)),
+                            sg.Button("⚙️ Settings",
+                                      key="-SETTINGS-", size=(15, 1)),
                         ],
                     ],
                 )
@@ -1733,7 +1694,8 @@ class YoutubeDownloaderGUI:
                 sg.Button("ℹ️ About", key="-ABOUT-"),
                 sg.Button("❌ Exit", key="-EXIT-"),
             ],
-            [sg.Text(f"v{VERSION}", font=("Helvetica", 8), pad=((5, 5), (5, 5)))],
+            [sg.Text(f"v{VERSION}", font=(
+                "Helvetica", 8), pad=((5, 5), (5, 5)))],
         ]
 
         # Combine all sections
@@ -1904,4 +1866,3 @@ if __name__ == "__main__":
 # The script is designed to be modular, with separate classes for different functionalities.
 # It includes a main function for running the application and error handling for unexpected events.
 
-from datetime import datetime
