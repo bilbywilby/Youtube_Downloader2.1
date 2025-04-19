@@ -1,0 +1,47 @@
+```toml
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --cov=youtube_downloader --cov-report=term-missing"
+testpaths = ["tests"]
+
+[tool.coverage.run]
+source = ["youtube_downloader"]
+omit = ["tests/*", "setup.py"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if settings.DEBUG",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "pass",
+    "raise ImportError",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311', 'py312']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.bandit]
+targets = ["youtube_downloader"]
+exclude_dirs = ["tests", "docs"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+```
+
