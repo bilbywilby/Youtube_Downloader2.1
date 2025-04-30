@@ -1,20 +1,20 @@
 # Core Dependencies
 PySimpleGUI==4.60.5                # GUI framework - fixed version for stability
-yt-dlp==2024.3.10                  # YouTube downloader core
+yt-dlp==2024.7.7                  # YouTube downloader core
 pytube==15.0.0                     # YouTube API integration
 pydantic[email]==2.6.1             # Data validation with email support
 
 # Media Processing
 ffmpeg-python==0.2.0               # Media processing
 pydub==0.25.1                      # Audio processing
-Pillow==10.2.0                     # Image processing
+Pillow==10.3.0                     # Image processing
 av==12.0.0                         # PyAV for fast media processing
 moviepy==1.0.3                     # Video editing capabilities
 
 # Networking and Web
 requests[security]==2.31.0         # HTTP requests with security extras
 aiohttp[speedups]==3.9.3          # Async HTTP with performance extras
-urllib3==2.2.0                     # HTTP client
+urllib3==2.4.0                     # HTTP client
 beautifulsoup4==4.12.3            # HTML parsing
 lxml==5.1.0                       # XML/HTML processing
 validators==0.22.0                 # URL validation
@@ -27,8 +27,8 @@ psutil==5.9.8                      # System monitoring
 appdirs==1.4.4                     # App directories management
 python-dotenv==1.0.1               # Environment management
 uvloop==0.19.0                     # Fast event loop implementation
-orjson==3.9.10                     # Fast JSON parsing
-python-multipart==0.0.6            # Multipart form data parser
+orjson==3.9.15                     # Fast JSON parsing
+python-multipart==0.0.18            # Multipart form data parser
 watchdog==3.0.0                    # File system monitoring
 
 # Database and Storage
@@ -39,22 +39,22 @@ redis==5.0.1                      # Optional caching support
 asyncpg==0.29.0                   # Async PostgreSQL support
 
 # Security
-cryptography==42.0.2              # Strong cryptography
+cryptography==44.0.1              # Strong cryptography
 python-jose[cryptography]==3.3.0   # JWT handling with crypto support
 argon2-cffi==23.1.0               # Password hashing
-certifi==2024.2.2                 # SSL certificates
+certifi==2024.7.4                 # SSL certificates
 pyOpenSSL==24.0.0                 # SSL/TLS toolkit
 bcrypt==4.1.2                     # Password hashing
 
 # Error Handling and Logging
 structlog==24.1.0                 # Structured logging
 python-json-logger==2.0.7         # JSON log formatter
-sentry-sdk==1.39.1                # Error tracking
+sentry-sdk==2.8.0                # Error tracking
 tenacity==8.2.3                   # Retry handling
 backoff==2.2.1                    # Backoff handler
 
 # Progress and UI Enhancement
-tqdm==4.66.2                      # Progress bars
+tqdm==4.66.3                      # Progress bars
 colorama==0.4.6                   # Terminal colors
 blessed==1.20.0                   # Terminal formatting
 rich==13.7.0                      # Rich text and formatting
@@ -65,7 +65,7 @@ pytest==8.0.0                     # Testing framework
 pytest-asyncio==0.23.5            # Async test support
 pytest-cov==4.1.0                 # Test coverage
 pytest-xdist==3.5.0               # Parallel testing
-black==24.1.1                     # Code formatting
+black==24.3.0                     # Code formatting
 flake8==7.0.0                     # Code linting
 mypy==1.8.0                       # Static type checking
 isort==5.13.2                     # Import sorting
