@@ -1,31 +1,29 @@
 {
   "version": "0.2.0",
   "configurations": [
-
-
     {
-        "command": "npm start",
-        "name": "Run npm start",
-        "request": "launch",
-        "type": "node-terminal"
+      "command": "npm start",
+      "name": "Run npm start",
+      "request": "launch",
+      "type": "node-terminal"
     },
     {
-        "name": "Run npm test",
-        "type": "node-terminal",
-        "request": "launch",
-        "command": "npm test"
+      "name": "Run npm test",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm test"
     },
     {
-        "name": "Run npm test (watch)",
-        "type": "node-terminal",
-        "request": "launch",
-        "command": "npm test -- --watch"
+      "name": "Run npm test (watch)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm test -- --watch"
     },
     {
-        "name": "Run npm test (debug)",
-        "type": "node-terminal",
-        "request": "launch",
-        "command": "npm test -- --watch --debug"
+      "name": "Run npm test (debug)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "npm test -- --watch --debug"
     },
     {
       "name": ".NET Core Launch (web)",
@@ -33,59 +31,59 @@
       "request": ".NET Core Launch (web)"
     },
     {
-        "name": "CMake: Debug project",
-        "type": "cmake",
-        "request": "launch",
-        "cmakeDebugType": "build",
-        "clean": false,
-        "configureAll": false
+      "name": "CMake: Debug project",
+      "type": "cmake",
+      "request": "launch",
+      "cmakeDebugType": "build",
+      "clean": false,
+      "configureAll": false
     },
     {
-        "name": "CMake: Debug project (GDB)",
-        "type": "cmake",
-        "request": "launch",
-        "cmakeDebugType": "build",
-        "clean": false,
-        "configureAll": false,
-        "MIMode": "gdb"
+      "name": "CMake: Debug project (GDB)",
+      "type": "cmake",
+      "request": "launch",
+      "cmakeDebugType": "build",
+      "clean": false,
+      "configureAll": false,
+      "MIMode": "gdb"
     },
     {
-        "name": "CMake: Debug project (Win)",
-        "type": "cmake",
-        "request": "launch",
-        "cmakeDebugType": "build",
-        "clean": false,
-        "configureAll": false,
-        "MIMode": "lldb"
+      "name": "CMake: Debug project (Win)",
+      "type": "cmake",
+      "request": "launch",
+      "cmakeDebugType": "build",
+      "clean": false,
+      "configureAll": false,
+      "MIMode": "lldb"
     },
     {
-        "type": "cmake",
-        "request": "launch",
-        "name": "CMake: Configure project",
-        "cmakeDebugType": "configure",
-        "clean": false,
-        "configureAll": false
+      "type": "cmake",
+      "request": "launch",
+      "name": "CMake: Configure project",
+      "cmakeDebugType": "configure",
+      "clean": false,
+      "configureAll": false
     },
     {
-        "name": "Python C++ Debugger",
-        "type": "pythoncpp",
-        "request": "launch",
-        "pythonConfig": "default",
-        "cppConfig": "!!pick 'default (win) Attach' or 'default (gdb) Attach'"
+      "name": "Python C++ Debugger",
+      "type": "pythoncpp",
+      "request": "launch",
+      "pythonConfig": "default",
+      "cppConfig": "!!pick 'default (win) Attach' or 'default (gdb) Attach'"
     },
     {
-        "name": "Python C++ Debugger (GDB)",
-        "type": "pythoncpp",
-        "request": "launch",
-        "pythonConfig": "default",
-        "cppConfig": "default (gdb) Attach"
+      "name": "Python C++ Debugger (GDB)",
+      "type": "pythoncpp",
+      "request": "launch",
+      "pythonConfig": "default",
+      "cppConfig": "default (gdb) Attach"
     },
     {
-        "name": "Python C++ Debugger (Win)",
-        "type": "pythoncpp",
-        "request": "launch",
-        "pythonConfig": "default",
-        "cppConfig": "default (win) Attach"
+      "name": "Python C++ Debugger (Win)",
+      "type": "pythoncpp",
+      "request": "launch",
+      "pythonConfig": "default",
+      "cppConfig": "default (win) Attach"
     },
     {
       "name": ".NET Core Launch (web)",
@@ -93,81 +91,81 @@
       "request": "launch",
       "preLaunchTask": "build",
       ".NET Core Launch (web)": {
-          "commandName": ".NET Core Launch (web)",
-          "launchBrowser": true,
-          "environmentVariables": {
-              "ASPNETCORE_ENVIRONMENT": "Development"
-          }
+        "commandName": ".NET Core Launch (web)",
+        "launchBrowser": true,
+        "environmentVariables": {
+          "ASPNETCORE_ENVIRONMENT": "Development"
+        }
       }
     },
     {
-        "name": ".NET Core Attach",
-        "type": "coreclr",
-        "request": "attach",
-        "processId": "${command:pickProcess}"
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
     },
     {
-        "name": ".NET Core Debug Console",
-        "type": "coreclr",
-        "request": "launch",
-        "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
-        "args": [],
-        "cwd": "${workspaceRoot}",
-        "stopAtEntry": false,
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        }
+      "name": ".NET Core Debug Console",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
+      "args": [],
+      "cwd": "${workspaceRoot}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      }
     },
     {
-        "name": ".NET Core Debug Console (Windows)",
-        "type": "coreclr",
-        "request": "launch",
-        "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
-        "args": [],
-        "cwd": "${workspaceRoot}",
-        "stopAtEntry": false,
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
-        "windows": {
-            "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.exe"
-        }
+      "name": ".NET Core Debug Console (Windows)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
+      "args": [],
+      "cwd": "${workspaceRoot}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "windows": {
+        "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.exe"
+      }
     },
     {
-        "name": ".NET Core Debug Console (Linux)",
-        "type": "coreclr",
-        "request": "launch",
-        "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
-        "args": [],
-        "cwd": "${workspaceRoot}",
-        "stopAtEntry": false,
-        "serverReadyAction": {
-            "action": "openExternally",
-            "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
-        },
-        "linux": {
-            "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader"
-        }
+      "name": ".NET Core Debug Console (Linux)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader.dll",
+      "args": [],
+      "cwd": "${workspaceRoot}",
+      "stopAtEntry": false,
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "linux": {
+        "program": "${workspaceRoot}/bin/Debug/net6.0/YouTube_Downloader"
+      }
     },
     {
-        "name": "Cake: Debug Script (.NET Tool)",
-        "type": "coreclr",
-        "request": "launch",
-        "program": "dotnet-cake",
-        "windows": {
-            "program": "dotnet-cake.exe"
-        },
-        "args": [
-            "${workspaceRoot}/build.cake",
-            "--debug",
-            "--verbosity=diagnostic"
-        ],
-        "cwd": "${workspaceRoot}",
-        "stopAtEntry": false,
-        "externalConsole": false,
-        "justMyCode": false
+      "name": "Cake: Debug Script (.NET Tool)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet-cake",
+      "windows": {
+        "program": "dotnet-cake.exe"
+      },
+      "args": [
+        "${workspaceRoot}/build.cake",
+        "--debug",
+        "--verbosity=diagnostic"
+      ],
+      "cwd": "${workspaceRoot}",
+      "stopAtEntry": false,
+      "externalConsole": false,
+      "justMyCode": false
     },
     {
       "name": "Python: Flask",
@@ -295,7 +293,13 @@
       "justMyCode": false,
       "console": "integratedTerminal"
     },
-{"name":"Python Debugger: Current File","type":"debugpy","request":"launch","program":"${file}","console":"integratedTerminal"},
+    {
+      "name": "Python Debugger: Current File",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "${file}",
+      "console": "integratedTerminal"
+    },
     {
       "name": "Python: YouTube Downloader",
       "type": "debugpy",
